@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#define RAYGUI_IMPLEMENTATION
 #include "raylib.h"
+#define RAYGUI_IMPLEMENTATION
 #include "raygui.h"
 //#include "blackjackclient.h"
 #include "gamewindow.h"
