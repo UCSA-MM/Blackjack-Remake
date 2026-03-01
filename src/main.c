@@ -12,13 +12,9 @@
 bool startMenu() {return true;}
 
 int main(void) {
-    InitWindow(1200, 625, "Blackjack");
-    SetTargetFPS(30);
+    
     bool isLoggedIn = startMenu();
     GameStart(isLoggedIn);
     return 0;
 }
-
-// TODO:
-// [ ] fix the errors in gamewindow.c (as in, start rewriting that stuff too)
 

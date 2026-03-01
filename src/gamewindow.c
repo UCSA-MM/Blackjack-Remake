@@ -19,6 +19,7 @@
 #define CARD_HEIGHT 0.35f
 
 void game_DrawCard(card card, Rectangle target);
+void game_UpdateSizes();
 
 Rectangle arr_recPlayerCards[MAX_CARD_NUM] = {0};
 Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
@@ -27,6 +28,11 @@ float screenWidth = 0.f;
 float screenHeight = 0.f;
 
 void GameStart(bool is_logged_in) {
+
+  InitWindow(0, 0, "Blackjack");
+  SetWindowSize(GetMonitorWidth(GetCurrentMonitor()) / 2, GetMonitorHeight(GetCurrentMonitor()) / 2);
+  SetTargetFPS(30);
+
   deck gameDeck = FillDeck(DECK_NUM);
   ShuffleDeck(&gameDeck);
   card playerHand[5] = {0};
@@ -42,28 +48,12 @@ void GameStart(bool is_logged_in) {
   int playerHandScore = CalcScore(playerHand, playerCardNum);
   int dealerCardScore = CalcScore(dealerHand, dealerCardNum);
 
-  screenWidth = (float)GetScreenWidth();
-  screenHeight = (float)GetScreenHeight();
-
-  for (int i = 0; i < MAX_CARD_NUM; i++) {
-    arr_recPlayerCards[i].x = (CARD_X_START + (i * CARD_X_STEP)) * screenWidth;
-    arr_recDealerCards[i].x = arr_recPlayerCards[i].x;
-    arr_recPlayerCards[i].width = screenWidth * CARD_WIDTH;
-    arr_recDealerCards[i].width = arr_recPlayerCards[i].width;
-    arr_recPlayerCards[i].y = screenHeight * PLAYER_CARD_Y;
-    arr_recDealerCards[i].y = screenHeight * DEALER_CARD_Y;
-    arr_recPlayerCards[i].height = screenHeight * CARD_HEIGHT;
-    arr_recDealerCards[i].height = arr_recPlayerCards[i].height;
-  }
-
+  
   //start of program
   
-  //borderless creates issues on WSL since the sizes get fucked up, will add a #IFDEF or something later
-  //if(!IsWindowState(FLAG_BORDERLESS_WINDOWED_MODE)) {
-    //SetWindowState(FLAG_BORDERLESS_WINDOWED_MODE);
-  //}
-
   while (!WindowShouldClose()) {
+
+    game_UpdateSizes();
 
     BeginDrawing();
 
@@ -74,6 +64,37 @@ void GameStart(bool is_logged_in) {
     }
     for (int i = playerCardNum; i < MAX_CARD_NUM; i++) {
       DrawRectangleRec(arr_recPlayerCards[i], GREEN);
+    }
+
+    for (int i = 0; i < MAX_CARD_NUM; i++) {
+
+      switch (i < playerCardNum) {
+        case true:
+          game_DrawCard(playerHand[i], arr_recPlayerCards[i]);
+          break;
+        case false:
+          DrawRectangleRec(arr_recPlayerCards[i], GREEN);
+          break;
+      }
+    }
+
+    if (dealerCardNum == START_CARD_NUM) {
+      
+      //only the first card is shown to the player while the others are face down
+      game_DrawCard(dealerHand[0], arr_recDealerCards[0]);
+
+      for (int i = 1; i < MAX_CARD_NUM; i++) {
+
+        switch (i < dealerCardNum) {
+          case true:
+            DrawRectangleRec(arr_recDealerCards[i], DARKBLUE);
+            break;
+          case false:
+            DrawRectangleRec(arr_recDealerCards[i], GREEN);
+            break;
+        }
+      }
+
     }
 
     EndDrawing();
@@ -87,4 +108,25 @@ void GameStart(bool is_logged_in) {
 void game_DrawCard(card card, Rectangle target) {
   //card text to be implemented
   DrawRectangleRec(target, RAYWHITE);
+}
+
+void game_UpdateSizes() {
+  
+  screenWidth = (float)GetScreenWidth();
+  screenHeight = (float)GetScreenHeight();
+  
+  for (int i = 0; i < MAX_CARD_NUM; i++) {
+
+    arr_recPlayerCards[i].x = (CARD_X_START + (i * CARD_X_STEP)) * screenWidth;
+    arr_recDealerCards[i].x = arr_recPlayerCards[i].x;
+
+    arr_recPlayerCards[i].width = CARD_WIDTH * screenWidth;
+    arr_recDealerCards[i].width = arr_recPlayerCards[i].width;
+
+    arr_recPlayerCards[i].y = PLAYER_CARD_Y * screenHeight;
+    arr_recDealerCards[i].y = DEALER_CARD_Y * screenHeight;
+
+    arr_recPlayerCards[i].height = CARD_HEIGHT * screenHeight;
+    arr_recDealerCards[i].height = arr_recPlayerCards[i].height;
+  }
 }
