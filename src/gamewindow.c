@@ -26,6 +26,11 @@ Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
 
 float screenWidth = 0.f;
 float screenHeight = 0.f;
+float suit_xFromBorder = 0.f;
+float suit_yFromBorder = 0.f;
+
+Font cardFont;
+Font suitFont;
 
 void GameStart(bool is_logged_in) {
 
@@ -48,6 +53,8 @@ void GameStart(bool is_logged_in) {
   int playerHandScore = CalcScore(playerHand, playerCardNum);
   int dealerCardScore = CalcScore(dealerHand, dealerCardNum);
 
+  cardFont = LoadFontEx("../assets/JQKAs Wild.otf", 128, 0, 250);
+  suitFont = LoadFontEx("../assets/JQKAs Wild.otf", 32, 0, 250);
   
   //start of program
   
@@ -107,7 +114,60 @@ void GameStart(bool is_logged_in) {
 
 void game_DrawCard(card card, Rectangle target) {
   //card text to be implemented
+  
+  char suitStr[2] = "";
+  Color textColor;
+  
+  if (strcmp(card.suit, "Clubs") == 0) {
+    strcpy(suitStr, CLUBS);
+    textColor = BLACK;
+  }
+  else if (strcmp(card.suit, "Diamonds") == 0) {
+    strcpy(suitStr, DIAMONDS);
+    textColor = RED;
+  }
+  else if (strcmp(card.suit, "Hearts") == 0) {
+    strcpy(suitStr, HEARTS);
+    textColor = RED;
+  }
+  else if (strcmp(card.suit, "Spades") == 0) {
+    strcpy(suitStr, SPADES);
+    textColor = BLACK;
+  }
+
   DrawRectangleRec(target, RAYWHITE);
+  
+  Vector2 suit_textSize = MeasureTextEx(suitFont, suitStr, (float)suitFont.baseSize, 0);
+
+  float suit_leftX = target.x + suit_xFromBorder - (suit_textSize.x / 2.f);
+  float suit_rightX = target.x + target.width - suit_xFromBorder - (suit_textSize.x / 2.f);
+  float suit_botY = target.y + suit_yFromBorder - (suit_textSize.y / 2.f);
+  float suit_topY = target.y + target.height - suit_yFromBorder - (suit_textSize.y / 2.f);
+
+  Vector2 suit_botLeft = (Vector2){suit_leftX, suit_botY};
+  Vector2 suit_botRight = (Vector2){suit_rightX, suit_botY};
+  Vector2 suit_topLeft = (Vector2){suit_leftX, suit_topY};
+  Vector2 suit_topRight = (Vector2){suit_rightX, suit_topY};
+
+  DrawTextEx(suitFont, suitStr, suit_botLeft, (float)suitFont.baseSize, 0, textColor);
+  DrawTextEx(suitFont, suitStr, suit_botRight, (float)suitFont.baseSize, 0, textColor);
+  DrawTextEx(suitFont, suitStr, suit_topLeft, (float)suitFont.baseSize, 0, textColor);
+  DrawTextEx(suitFont, suitStr, suit_topRight, (float)suitFont.baseSize, 0, textColor);
+
+  char rankStr[3] = "";
+  char arr_rankStr[][3] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+  
+  strcpy(rankStr, arr_rankStr[card.rank - 1]);
+
+  Vector2 rank_textSize = MeasureTextEx(cardFont, rankStr, (float)cardFont.baseSize, 2);
+
+  float rank_x = target.x + (target.width / 2.f) - (rank_textSize.x / 2.f);
+  float rank_y = target.y + (target.height / 2.f) - (rank_textSize.y / 2.f);
+
+  Vector2 rank_pos = (Vector2){rank_x, rank_y};
+
+  DrawTextEx(cardFont, rankStr, rank_pos, (float)cardFont.baseSize, 2, textColor);
+
 }
 
 void game_UpdateSizes() {
@@ -128,5 +188,26 @@ void game_UpdateSizes() {
 
     arr_recPlayerCards[i].height = CARD_HEIGHT * screenHeight;
     arr_recDealerCards[i].height = arr_recPlayerCards[i].height;
+    
+    //we are basically finding the diagonal of a smaller rectangle with the same ratio
+    //if x = y * ratio, the diagonal will be sqrtf(y^2 * (1+ratio^2)).
+    //we can find y from this result and consequentially find x to get the values to position the suit symbols
+    //we are using this on a segment of the diagonal equal to 10% of its size to have a relative position on the card.
+    //all the calculations are done relative to the card, not absolute to the window.
+    //if this isn't clear, idk how to explain it better without making this too long so have fun
+    float cWidth = CARD_WIDTH * screenWidth;
+    float cHeight = CARD_HEIGHT * screenHeight;
+    float ratio = cWidth / cHeight;
+    float coeff2 = 1 + (ratio * ratio);
+    float diagonalSize = sqrtf((cWidth * cWidth) + (cHeight * cHeight));
+    float segmentSize = diagonalSize * 0.1f;
+    suit_yFromBorder = sqrtf((segmentSize * segmentSize) / coeff2);
+    suit_xFromBorder = suit_yFromBorder * ratio;
+
   }
 }
+
+// TODO:
+// - add correct scaling to fonts
+// - finish adding UI elements to the game screen 
+// - all the other things related to the game logic
