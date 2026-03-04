@@ -22,6 +22,7 @@
 //initially it was a window with height 625 and the two values were 32 and 128
 #define FONT_SUIT_MULT 19.5f
 #define FONT_CARD_MULT 4.8f
+#define FONT_DEFAULT_MULT 35.f
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
@@ -35,11 +36,27 @@ float suit_xFromBorder = 0.f;
 float suit_yFromBorder = 0.f;
 float font_suitSize = 0.f;
 float font_cardSize = 0.f;
+float font_defaultSize = 0.f;
 
 Font cardFont;
-Font suitFont;
+Font defaultFont;
 
 void GameStart(bool is_logged_in) {
+
+  bool hitButtonPressed = false;
+  bool standButtonPressed = false;
+  bool surrendButtonPressed = false;
+  bool doubledownButtonPressed = false;
+  bool betButtonPressed = false;
+
+  Rectangle button_bg;
+  Rectangle rec_hitButton;
+  Rectangle rec_standButton;
+  Rectangle rec_surrendButton;
+  Rectangle rec_doubledownButton;
+  Rectangle rec_betButton;
+
+  SetConfigFlags(FLAG_MSAA_4X_HINT);
 
   InitWindow(0, 0, "Blackjack");
   SetWindowSize(GetMonitorWidth(GetCurrentMonitor()) / 2, GetMonitorHeight(GetCurrentMonitor()) / 2);
@@ -63,7 +80,9 @@ void GameStart(bool is_logged_in) {
   //font size inserted here is just a relatively safe size to not have weird stuff.
   //weird stuff can still (and will) happen on high resolution monitors
   cardFont = LoadFontEx("../assets/JQKAs Wild.otf", 128, 0, 250);
+  defaultFont = GetFontDefault();
   SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
+  //default font is not set because it is a pixel type font
   
   //start of program
   
@@ -72,6 +91,8 @@ void GameStart(bool is_logged_in) {
     game_UpdateSizes();
 
     BeginDrawing();
+    
+    //draw initial table state
 
     ClearBackground(DARKGREEN);
 
@@ -113,10 +134,36 @@ void GameStart(bool is_logged_in) {
 
     }
 
+    //setup of other UI elements
+    
+    GuiSetStyle(DEFAULT, TEXT_SIZE, font_defaultSize);
+   
+    //magic numbers in buttons can just be seen as percentages of the window
+
+    const float button_x = screenWidth * 0.91f, button_width = screenWidth * 0.08f, button_height = screenHeight * 0.05f;
+
+    button_bg.x = screenWidth * 0.9f; button_bg.y = 0; button_bg.width = screenWidth * 0.1f; button_bg.height = screenHeight;
+    rec_hitButton.x = rec_standButton.x = rec_surrendButton.x = rec_doubledownButton.x = rec_betButton.x = button_x;
+    rec_hitButton.width = rec_standButton.width = rec_surrendButton.width = rec_doubledownButton.width = rec_betButton.width = button_width;
+    rec_hitButton.height = rec_standButton.height = rec_surrendButton.height = rec_doubledownButton.height = rec_betButton.height = button_height;
+    rec_hitButton.y = screenHeight * 0.01f;
+    rec_standButton.y = screenHeight * 0.08f;
+    rec_surrendButton.y = screenHeight * 0.15f;
+    rec_doubledownButton.y = screenHeight * 0.22f;
+    rec_betButton.y = screenHeight * 0.29f;
+
+    DrawRectangleRec(button_bg, BROWN);
+    hitButtonPressed = GuiButton(rec_hitButton, "HIT!");
+    standButtonPressed = GuiButton(rec_standButton, "STAND");
+    surrendButtonPressed = GuiButton(rec_surrendButton, "SURREND");
+    doubledownButtonPressed = GuiButton(rec_doubledownButton, "DOUBLE!");
+    betButtonPressed = GuiButton(rec_betButton, "BET!");
+
     EndDrawing();
   }
 
   free(gameDeck.cards);
+  UnloadFont(cardFont);
   exit(0);
     
 }
@@ -215,6 +262,7 @@ void game_UpdateSizes() {
 
     font_cardSize = screenHeight / FONT_CARD_MULT;
     font_suitSize = screenHeight / FONT_SUIT_MULT;
+    font_defaultSize = screenHeight / FONT_DEFAULT_MULT;
 
   }
 }
