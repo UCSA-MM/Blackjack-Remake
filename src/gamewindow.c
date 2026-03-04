@@ -11,12 +11,17 @@
 
 //game options are in the header file
 #define MAX_CARD_NUM 5
+//all of the values defined for card size were done with math i forgot about, but they work
 #define CARD_WIDTH 0.156f
 #define CARD_X_START 0.03f
 #define CARD_X_STEP 0.171f
 #define DEALER_CARD_Y 0.1f
 #define PLAYER_CARD_Y 0.55f
 #define CARD_HEIGHT 0.35f
+//size * defined value = screen height
+//initially it was a window with height 625 and the two values were 32 and 128
+#define FONT_SUIT_MULT 19.5f
+#define FONT_CARD_MULT 4.8f
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
@@ -28,6 +33,8 @@ float screenWidth = 0.f;
 float screenHeight = 0.f;
 float suit_xFromBorder = 0.f;
 float suit_yFromBorder = 0.f;
+float font_suitSize = 0.f;
+float font_cardSize = 0.f;
 
 Font cardFont;
 Font suitFont;
@@ -52,9 +59,11 @@ void GameStart(bool is_logged_in) {
   playerCardNum = dealerCardNum = START_CARD_NUM;
   int playerHandScore = CalcScore(playerHand, playerCardNum);
   int dealerCardScore = CalcScore(dealerHand, dealerCardNum);
-
+  
+  //font size inserted here is just a relatively safe size to not have weird stuff.
+  //weird stuff can still (and will) happen on high resolution monitors
   cardFont = LoadFontEx("../assets/JQKAs Wild.otf", 128, 0, 250);
-  suitFont = LoadFontEx("../assets/JQKAs Wild.otf", 32, 0, 250);
+  SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
   
   //start of program
   
@@ -137,7 +146,7 @@ void game_DrawCard(card card, Rectangle target) {
 
   DrawRectangleRec(target, RAYWHITE);
   
-  Vector2 suit_textSize = MeasureTextEx(suitFont, suitStr, (float)suitFont.baseSize, 0);
+  Vector2 suit_textSize = MeasureTextEx(cardFont, suitStr, font_suitSize, 0);
 
   float suit_leftX = target.x + suit_xFromBorder - (suit_textSize.x / 2.f);
   float suit_rightX = target.x + target.width - suit_xFromBorder - (suit_textSize.x / 2.f);
@@ -149,24 +158,24 @@ void game_DrawCard(card card, Rectangle target) {
   Vector2 suit_topLeft = (Vector2){suit_leftX, suit_topY};
   Vector2 suit_topRight = (Vector2){suit_rightX, suit_topY};
 
-  DrawTextEx(suitFont, suitStr, suit_botLeft, (float)suitFont.baseSize, 0, textColor);
-  DrawTextEx(suitFont, suitStr, suit_botRight, (float)suitFont.baseSize, 0, textColor);
-  DrawTextEx(suitFont, suitStr, suit_topLeft, (float)suitFont.baseSize, 0, textColor);
-  DrawTextEx(suitFont, suitStr, suit_topRight, (float)suitFont.baseSize, 0, textColor);
+  DrawTextEx(cardFont, suitStr, suit_botLeft, font_suitSize, 0, textColor);
+  DrawTextEx(cardFont, suitStr, suit_botRight, font_suitSize, 0, textColor);
+  DrawTextEx(cardFont, suitStr, suit_topLeft, font_suitSize, 0, textColor);
+  DrawTextEx(cardFont, suitStr, suit_topRight, font_suitSize, 0, textColor);
 
   char rankStr[3] = "";
   char arr_rankStr[][3] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
   
   strcpy(rankStr, arr_rankStr[card.rank - 1]);
 
-  Vector2 rank_textSize = MeasureTextEx(cardFont, rankStr, (float)cardFont.baseSize, 2);
+  Vector2 rank_textSize = MeasureTextEx(cardFont, rankStr, font_cardSize, 2);
 
   float rank_x = target.x + (target.width / 2.f) - (rank_textSize.x / 2.f);
   float rank_y = target.y + (target.height / 2.f) - (rank_textSize.y / 2.f);
 
   Vector2 rank_pos = (Vector2){rank_x, rank_y};
 
-  DrawTextEx(cardFont, rankStr, rank_pos, (float)cardFont.baseSize, 2, textColor);
+  DrawTextEx(cardFont, rankStr, rank_pos, font_cardSize, 2, textColor);
 
 }
 
@@ -204,10 +213,13 @@ void game_UpdateSizes() {
     suit_yFromBorder = sqrtf((segmentSize * segmentSize) / coeff2);
     suit_xFromBorder = suit_yFromBorder * ratio;
 
+    font_cardSize = screenHeight / FONT_CARD_MULT;
+    font_suitSize = screenHeight / FONT_SUIT_MULT;
+
   }
 }
 
 // TODO:
-// - add correct scaling to fonts
-// - finish adding UI elements to the game screen 
-// - all the other things related to the game logic
+// [X] add correct scaling to fonts
+// [ ] finish adding UI elements to the game screen 
+// [ ] all the other things related to the game logic
