@@ -6,14 +6,14 @@
 #include "raygui.h"
 //#include "blackjackclient.h"
 #include "gamewindow.h"
-//#include "gamemenu.h"
+#include "gamemenu.h"
 
 // currently prototypes defined just to avoid errors, is part of another file
-bool startMenu() {return true;}
+
 
 int main(void) {
     
-    bool isLoggedIn = startMenu();
+    bool isLoggedIn = StartMenu();
     GameStart(isLoggedIn);
     return 0;
 }

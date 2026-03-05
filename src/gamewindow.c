@@ -30,8 +30,8 @@ void game_UpdateSizes();
 Rectangle arr_recPlayerCards[MAX_CARD_NUM] = {0};
 Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
 
-float screenWidth = 0.f;
-float screenHeight = 0.f;
+float game_screenWidth = 0.f;
+float game_screenHeight = 0.f;
 float suit_xFromBorder = 0.f;
 float suit_yFromBorder = 0.f;
 float font_suitSize = 0.f;
@@ -140,17 +140,17 @@ void GameStart(bool is_logged_in) {
    
     //magic numbers in buttons can just be seen as percentages of the window
 
-    const float button_x = screenWidth * 0.91f, button_width = screenWidth * 0.08f, button_height = screenHeight * 0.05f;
+    const float button_x = game_screenWidth * 0.91f, button_width = game_screenWidth * 0.08f, button_height = game_screenHeight * 0.05f;
 
-    button_bg.x = screenWidth * 0.9f; button_bg.y = 0; button_bg.width = screenWidth * 0.1f; button_bg.height = screenHeight;
+    button_bg.x = game_screenWidth * 0.9f; button_bg.y = 0; button_bg.width = game_screenWidth * 0.1f; button_bg.height = game_screenHeight;
     rec_hitButton.x = rec_standButton.x = rec_surrendButton.x = rec_doubledownButton.x = rec_betButton.x = button_x;
     rec_hitButton.width = rec_standButton.width = rec_surrendButton.width = rec_doubledownButton.width = rec_betButton.width = button_width;
     rec_hitButton.height = rec_standButton.height = rec_surrendButton.height = rec_doubledownButton.height = rec_betButton.height = button_height;
-    rec_hitButton.y = screenHeight * 0.01f;
-    rec_standButton.y = screenHeight * 0.08f;
-    rec_surrendButton.y = screenHeight * 0.15f;
-    rec_doubledownButton.y = screenHeight * 0.22f;
-    rec_betButton.y = screenHeight * 0.29f;
+    rec_hitButton.y = game_screenHeight * 0.01f;
+    rec_standButton.y = game_screenHeight * 0.08f;
+    rec_surrendButton.y = game_screenHeight * 0.15f;
+    rec_doubledownButton.y = game_screenHeight * 0.22f;
+    rec_betButton.y = game_screenHeight * 0.29f;
 
     DrawRectangleRec(button_bg, BROWN);
     hitButtonPressed = GuiButton(rec_hitButton, "HIT!");
@@ -228,21 +228,21 @@ void game_DrawCard(card card, Rectangle target) {
 
 void game_UpdateSizes() {
   
-  screenWidth = (float)GetScreenWidth();
-  screenHeight = (float)GetScreenHeight();
+  game_screenWidth = (float)GetScreenWidth();
+  game_screenHeight = (float)GetScreenHeight();
   
   for (int i = 0; i < MAX_CARD_NUM; i++) {
 
-    arr_recPlayerCards[i].x = (CARD_X_START + (i * CARD_X_STEP)) * screenWidth;
+    arr_recPlayerCards[i].x = (CARD_X_START + (i * CARD_X_STEP)) * game_screenWidth;
     arr_recDealerCards[i].x = arr_recPlayerCards[i].x;
 
-    arr_recPlayerCards[i].width = CARD_WIDTH * screenWidth;
+    arr_recPlayerCards[i].width = CARD_WIDTH * game_screenWidth;
     arr_recDealerCards[i].width = arr_recPlayerCards[i].width;
 
-    arr_recPlayerCards[i].y = PLAYER_CARD_Y * screenHeight;
-    arr_recDealerCards[i].y = DEALER_CARD_Y * screenHeight;
+    arr_recPlayerCards[i].y = PLAYER_CARD_Y * game_screenHeight;
+    arr_recDealerCards[i].y = DEALER_CARD_Y * game_screenHeight;
 
-    arr_recPlayerCards[i].height = CARD_HEIGHT * screenHeight;
+    arr_recPlayerCards[i].height = CARD_HEIGHT * game_screenHeight;
     arr_recDealerCards[i].height = arr_recPlayerCards[i].height;
     
     //we are basically finding the diagonal of a smaller rectangle with the same ratio
@@ -251,8 +251,8 @@ void game_UpdateSizes() {
     //we are using this on a segment of the diagonal equal to 10% of its size to have a relative position on the card.
     //all the calculations are done relative to the card, not absolute to the window.
     //if this isn't clear, idk how to explain it better without making this too long so have fun
-    float cWidth = CARD_WIDTH * screenWidth;
-    float cHeight = CARD_HEIGHT * screenHeight;
+    float cWidth = CARD_WIDTH * game_screenWidth;
+    float cHeight = CARD_HEIGHT * game_screenHeight;
     float ratio = cWidth / cHeight;
     float coeff2 = 1 + (ratio * ratio);
     float diagonalSize = sqrtf((cWidth * cWidth) + (cHeight * cHeight));
@@ -260,9 +260,9 @@ void game_UpdateSizes() {
     suit_yFromBorder = sqrtf((segmentSize * segmentSize) / coeff2);
     suit_xFromBorder = suit_yFromBorder * ratio;
 
-    font_cardSize = screenHeight / FONT_CARD_MULT;
-    font_suitSize = screenHeight / FONT_SUIT_MULT;
-    font_defaultSize = screenHeight / FONT_DEFAULT_MULT;
+    font_cardSize = game_screenHeight / FONT_CARD_MULT;
+    font_suitSize = game_screenHeight / FONT_SUIT_MULT;
+    font_defaultSize = game_screenHeight / FONT_DEFAULT_MULT;
 
   }
 }
