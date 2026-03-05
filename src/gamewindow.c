@@ -23,6 +23,13 @@
 #define FONT_SUIT_MULT 19.5f
 #define FONT_CARD_MULT 4.8f
 #define FONT_DEFAULT_MULT 35.f
+//the currently in use font uses these characters to represent suit symbols and other special characters
+#define CLUBS "]"
+#define DIAMONDS "["
+#define HEARTS "{"
+#define SPADES "}"
+#define NARROW10 "="
+
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
@@ -79,7 +86,7 @@ void GameStart(bool is_logged_in) {
   
   //font size inserted here is just a relatively safe size to not have weird stuff.
   //weird stuff can still (and will) happen on high resolution monitors
-  cardFont = LoadFontEx("../assets/JQKAs Wild.otf", 128, 0, 250);
+  cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
   defaultFont = GetFontDefault();
   SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
   //default font is not set because it is a pixel type font
@@ -210,8 +217,8 @@ void game_DrawCard(card card, Rectangle target) {
   DrawTextEx(cardFont, suitStr, suit_topLeft, font_suitSize, 0, textColor);
   DrawTextEx(cardFont, suitStr, suit_topRight, font_suitSize, 0, textColor);
 
-  char rankStr[3] = "";
-  char arr_rankStr[][3] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+  char rankStr[2] = "";
+  char arr_rankStr[][2] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", NARROW10, "J", "Q", "K"};
   
   strcpy(rankStr, arr_rankStr[card.rank - 1]);
 

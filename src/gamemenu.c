@@ -22,7 +22,7 @@ bool StartMenu() {
   Vector2 titleVec;
   titleVec.x = menu_screenWidth * 0.03f; titleVec.y = menu_screenHeight * 0.03f;
 
-  Font titleFont = LoadFontEx("../assets/JQKAs Wild.otf", 128, 0, 250);
+  Font titleFont = LoadFontEx("../assets/cardcharacters.ttf", 128, 0, 250);
   
   while(!WindowShouldClose()) {
     
@@ -30,7 +30,7 @@ bool StartMenu() {
     
     ClearBackground(DARKGREEN);
 
-    DrawTextEx(titleFont, "BLACK JACK", titleVec, 128, 5, WHITE);
+    DrawTextEx(titleFont, "BLACKJACK", titleVec, 128, 5, WHITE);
     
     EndDrawing();
   }
