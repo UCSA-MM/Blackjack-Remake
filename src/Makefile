@@ -1,5 +1,5 @@
 main : main.c gamewindow.c cards.c gamemenu.c
-	gcc -Wall -Wextra --verbose \
+	gcc -Wall -Wextra -pedantic --verbose -O2 -g \
 	main.c cards.c gamewindow.c gamemenu.c \
 	-o main \
 	-I ../include -L ../lib -lraylib -lm
