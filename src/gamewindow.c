@@ -31,6 +31,9 @@
 #define SPADES "}"
 #define NARROW10 "="
 
+// flags for game logic
+bool flag_end = false;
+
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
 
@@ -83,7 +86,7 @@ void GameStart(bool is_logged_in) {
   int playerCardNum, dealerCardNum;
   playerCardNum = dealerCardNum = START_CARD_NUM;
   int playerHandScore = CalcScore(playerHand, playerCardNum);
-  int dealerCardScore = CalcScore(dealerHand, dealerCardNum);
+  int dealerHandScore = CalcScore(dealerHand, dealerCardNum);
 
   // font size inserted here is just a relatively safe size to not have weird
   // stuff. weird stuff can still (and will) happen on high resolution monitors
@@ -95,6 +98,25 @@ void GameStart(bool is_logged_in) {
   // start of program
 
   while (!WindowShouldClose()) {
+
+    if (playerCardNum < MAX_CARD_NUM && playerHandScore < 21) {
+      if (hitButtonPressed || doubledownButtonPressed) {
+        playerCardNum++;
+        playerHand[playerCardNum - 1] = DrawCard(&gameDeck);
+        playerHandScore = CalcScore(playerHand, playerCardNum);
+      }
+    }
+    if (standButtonPressed || doubledownButtonPressed || surrendButtonPressed ||
+        playerHandScore >= 21 || playerCardNum >= MAX_CARD_NUM) {
+
+      flag_end = true;
+
+      while (dealerHandScore < AI_STAND_SCORE && dealerCardNum < MAX_CARD_NUM) {
+        dealerCardNum++;
+        dealerHand[dealerCardNum - 1] = DrawCard(&gameDeck);
+        dealerHandScore = CalcScore(dealerHand, dealerCardNum);
+      }
+    }
 
     game_UpdateSizes();
 
@@ -120,7 +142,7 @@ void GameStart(bool is_logged_in) {
       }
     }
 
-    if (dealerCardNum == START_CARD_NUM) {
+    if (!flag_end) {
 
       // only the first card is shown to the player while the others are face
       // down
@@ -130,6 +152,16 @@ void GameStart(bool is_logged_in) {
 
         if (i < dealerCardNum) {
           DrawRectangleRec(arr_recDealerCards[i], DARKBLUE);
+        } else {
+          DrawRectangleRec(arr_recDealerCards[i], GREEN);
+        }
+      }
+    } else {
+
+      for (int i = 0; i < MAX_CARD_NUM; i++) {
+
+        if (i < dealerCardNum) {
+          game_DrawCard(dealerHand[i], arr_recDealerCards[i]);
         } else {
           DrawRectangleRec(arr_recDealerCards[i], GREEN);
         }
@@ -168,17 +200,16 @@ void GameStart(bool is_logged_in) {
     surrendButtonPressed = GuiButton(rec_surrendButton, "SURREND");
     doubledownButtonPressed = GuiButton(rec_doubledownButton, "DOUBLE!");
     betButtonPressed = GuiButton(rec_betButton, "BET!");
-    
+
     Vector2 mousePos = GetMousePosition();
     if (CheckCollisionPointRec(mousePos, rec_hitButton) ||
         CheckCollisionPointRec(mousePos, rec_standButton) ||
         CheckCollisionPointRec(mousePos, rec_surrendButton) ||
         CheckCollisionPointRec(mousePos, rec_doubledownButton) ||
-        CheckCollisionPointRec(mousePos, rec_betButton)
-    ){
+        CheckCollisionPointRec(mousePos, rec_betButton)) {
+
       SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-    }
-    else {
+    } else {
       SetMouseCursor(MOUSE_CURSOR_DEFAULT);
     }
 
@@ -232,7 +263,7 @@ void game_DrawCard(card card, Rectangle target) {
   DrawTextEx(cardFont, suitStr, suit_topRight, font_suitSize, 0, textColor);
 
   char rankStr[2] = "";
-  char arr_rankStr[][2] = {"A", "2", "3", "4", "5", "6", "7",
+  char arr_rankStr[][2] = {"A", "2", "3",      "4", "5", "6", "7",
                            "8", "9", NARROW10, "J", "Q", "K"};
 
   strcpy(rankStr, arr_rankStr[card.rank - 1]);
@@ -253,7 +284,6 @@ void game_UpdateSizes() {
   game_screenHeight = (float)GetScreenHeight();
 
   for (int i = 0; i < MAX_CARD_NUM; i++) {
-
     arr_recPlayerCards[i].x =
         (CARD_X_START + (i * CARD_X_STEP)) * game_screenWidth;
     arr_recDealerCards[i].x = arr_recPlayerCards[i].x;
@@ -293,4 +323,5 @@ void game_UpdateSizes() {
 // TODO:
 // [X] add correct scaling to font:
 // [ ] finish adding UI elements to the game screen
-
+// [ ] add bets
+// [ ] add a win screen
