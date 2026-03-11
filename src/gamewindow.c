@@ -22,7 +22,7 @@
 // initially it was a window with height 625 and the two values were 32 and 128
 #define FONT_SUIT_MULT 19.5f
 #define FONT_CARD_MULT 4.8f
-#define FONT_DEFAULT_MULT 35.f
+#define FONT_DEFAULT_MULT 30.f
 // the currently in use font uses these characters to represent suit symbols and
 // other special characters
 #define CLUBS "]"
@@ -33,12 +33,31 @@
 
 // flags for game logic
 bool flag_end = false;
+// enum for game end flags
+typedef enum endgame_state {
+  WIN = 1,
+  LOSE,
+  BUST,
+  CHARLIE,
+  BLACKJACK,
+  DRAW
+} endgame_state;
+// the 0 here is used to make sure it was set before
+// probably not necessary but better be safe ig
+endgame_state flag_endgame_state = 0;
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
 
 Rectangle arr_recPlayerCards[MAX_CARD_NUM] = {0};
 Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
+
+Rectangle button_bg;
+Rectangle rec_hitButton;
+Rectangle rec_standButton;
+Rectangle rec_surrendButton;
+Rectangle rec_doubledownButton;
+Rectangle rec_betButton;
 
 float game_screenWidth = 0.f;
 float game_screenHeight = 0.f;
@@ -51,20 +70,13 @@ float font_defaultSize = 0.f;
 Font cardFont;
 Font defaultFont;
 
-void GameStart(bool is_logged_in) {
+bool GameStart(bool is_logged_in) {
 
   bool hitButtonPressed = false;
   bool standButtonPressed = false;
   bool surrendButtonPressed = false;
   bool doubledownButtonPressed = false;
   bool betButtonPressed = false;
-
-  Rectangle button_bg;
-  Rectangle rec_hitButton;
-  Rectangle rec_standButton;
-  Rectangle rec_surrendButton;
-  Rectangle rec_doubledownButton;
-  Rectangle rec_betButton;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
 
@@ -101,19 +113,19 @@ void GameStart(bool is_logged_in) {
 
     if (playerCardNum < MAX_CARD_NUM && playerHandScore < 21) {
       if (hitButtonPressed || doubledownButtonPressed) {
-        playerCardNum++;
-        playerHand[playerCardNum - 1] = DrawCard(&gameDeck);
+
+        playerHand[playerCardNum++] = DrawCard(&gameDeck);
         playerHandScore = CalcScore(playerHand, playerCardNum);
       }
     }
     if (standButtonPressed || doubledownButtonPressed || surrendButtonPressed ||
-        playerHandScore >= 21 || playerCardNum >= MAX_CARD_NUM) {
+        playerCardNum >= MAX_CARD_NUM || playerHandScore >= 21) {
 
       flag_end = true;
 
       while (dealerHandScore < AI_STAND_SCORE && dealerCardNum < MAX_CARD_NUM) {
-        dealerCardNum++;
-        dealerHand[dealerCardNum - 1] = DrawCard(&gameDeck);
+
+        dealerHand[dealerCardNum++] = DrawCard(&gameDeck);
         dealerHandScore = CalcScore(dealerHand, dealerCardNum);
       }
     }
@@ -172,28 +184,6 @@ void GameStart(bool is_logged_in) {
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, font_defaultSize);
 
-    // magic numbers in buttons can just be seen as percentages of the window
-
-    const float button_x = game_screenWidth * 0.91f,
-                button_width = game_screenWidth * 0.08f,
-                button_height = game_screenHeight * 0.05f;
-
-    button_bg.x = game_screenWidth * 0.9f;
-    button_bg.y = 0;
-    button_bg.width = game_screenWidth * 0.1f;
-    button_bg.height = game_screenHeight;
-    rec_hitButton.x = rec_standButton.x = rec_surrendButton.x =
-        rec_doubledownButton.x = rec_betButton.x = button_x;
-    rec_hitButton.width = rec_standButton.width = rec_surrendButton.width =
-        rec_doubledownButton.width = rec_betButton.width = button_width;
-    rec_hitButton.height = rec_standButton.height = rec_surrendButton.height =
-        rec_doubledownButton.height = rec_betButton.height = button_height;
-    rec_hitButton.y = game_screenHeight * 0.01f;
-    rec_standButton.y = game_screenHeight * 0.08f;
-    rec_surrendButton.y = game_screenHeight * 0.15f;
-    rec_doubledownButton.y = game_screenHeight * 0.22f;
-    rec_betButton.y = game_screenHeight * 0.29f;
-
     DrawRectangleRec(button_bg, BROWN);
     hitButtonPressed = GuiButton(rec_hitButton, "HIT!");
     standButtonPressed = GuiButton(rec_standButton, "STAND");
@@ -218,7 +208,7 @@ void GameStart(bool is_logged_in) {
 
   free(gameDeck.cards);
   UnloadFont(cardFont);
-  exit(0);
+  return false;
 }
 
 void game_DrawCard(card card, Rectangle target) {
@@ -317,6 +307,37 @@ void game_UpdateSizes() {
     font_cardSize = game_screenHeight / FONT_CARD_MULT;
     font_suitSize = game_screenHeight / FONT_SUIT_MULT;
     font_defaultSize = game_screenHeight / FONT_DEFAULT_MULT;
+
+    // magic numbers can be seen as a percentage of the screen
+
+    const float button_x = game_screenWidth * 0.91f,
+                button_width = game_screenWidth * 0.08f,
+                button_height = game_screenHeight * 0.05f;
+
+    button_bg.x = game_screenWidth * 0.9f;
+    button_bg.y = 0;
+    button_bg.width = game_screenWidth * 0.1f;
+    button_bg.height = game_screenHeight;
+
+    rec_hitButton.x = rec_standButton.x = rec_surrendButton.x =
+        rec_doubledownButton.x = rec_betButton.x = button_x;
+
+    rec_hitButton.width = rec_standButton.width = rec_surrendButton.width =
+        rec_doubledownButton.width = rec_betButton.width = button_width;
+
+    rec_hitButton.height = rec_standButton.height = rec_surrendButton.height =
+        rec_doubledownButton.height = rec_betButton.height = button_height;
+
+    rec_hitButton.y = game_screenHeight * 0.01f;
+    rec_standButton.y = game_screenHeight * 0.08f;
+    rec_surrendButton.y = game_screenHeight * 0.15f;
+    rec_doubledownButton.y = game_screenHeight * 0.22f;
+    rec_betButton.y = game_screenHeight * 0.29f;
+  }
+}
+
+void DrawEndgameScreen() {
+  if (flag_endgame_state != 0) {
   }
 }
 

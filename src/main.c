@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #define RAYGUI_IMPLEMENTATION
-#include "raylib.h"
 #include "raygui.h"
+#include "raylib.h"
 // #include "blackjackclient.h"
 #include "gamemenu.h"
 #include "gamewindow.h"
@@ -11,6 +11,9 @@
 int main(void) {
 
   bool isLoggedIn = StartMenu();
-  GameStart(isLoggedIn);
+  bool repeat;
+  do {
+    repeat = GameStart(isLoggedIn);
+  } while (repeat == true);
   return 0;
 }

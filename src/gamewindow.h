@@ -3,5 +3,5 @@
 #define AI_STAND_SCORE 17
 #define START_CARD_NUM 2 //cannot be bigger than 5
 
-void GameStart(bool is_logged_in);
+bool GameStart(bool is_logged_in);
 
