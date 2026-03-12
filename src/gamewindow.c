@@ -23,6 +23,7 @@
 #define FONT_SUIT_MULT 19.5f
 #define FONT_CARD_MULT 4.8f
 #define FONT_DEFAULT_MULT 30.f
+#define FONT_ENDMSG_MULT 10.f
 // the currently in use font uses these characters to represent suit symbols and
 // other special characters
 #define CLUBS "]"
@@ -31,8 +32,6 @@
 #define SPADES "}"
 #define NARROW10 "="
 
-// flags for game logic
-bool flag_end = false;
 // enum for game end flags
 typedef enum endgame_state {
   WIN = 1,
@@ -42,12 +41,10 @@ typedef enum endgame_state {
   BLACKJACK,
   DRAW
 } endgame_state;
-// the 0 here is used to make sure it was set before
-// probably not necessary but better be safe ig
-endgame_state flag_endgame_state = 0;
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
+void DrawEndgameScreen(endgame_state flag_endgame_state);
 
 Rectangle arr_recPlayerCards[MAX_CARD_NUM] = {0};
 Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
@@ -58,6 +55,10 @@ Rectangle rec_standButton;
 Rectangle rec_surrendButton;
 Rectangle rec_doubledownButton;
 Rectangle rec_betButton;
+Rectangle rec_endMessage_bg;
+Rectangle rec_retryButton;
+
+Vector2 vec_endgameText;
 
 float game_screenWidth = 0.f;
 float game_screenHeight = 0.f;
@@ -66,6 +67,10 @@ float suit_yFromBorder = 0.f;
 float font_suitSize = 0.f;
 float font_cardSize = 0.f;
 float font_defaultSize = 0.f;
+float font_endmsgSize = 0.f;
+
+// buffer size is meaningless, current maximum: 18 + terminal
+char str_endMessage[32] = "";
 
 Font cardFont;
 Font defaultFont;
@@ -77,6 +82,7 @@ bool GameStart(bool is_logged_in) {
   bool surrendButtonPressed = false;
   bool doubledownButtonPressed = false;
   bool betButtonPressed = false;
+  bool flag_end = false;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
 
@@ -201,6 +207,11 @@ bool GameStart(bool is_logged_in) {
       SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
     } else {
       SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+
+    if (flag_end) {
+      endgame_state testState = WIN;
+      DrawEndgameScreen(testState);
     }
 
     EndDrawing();
@@ -333,11 +344,57 @@ void game_UpdateSizes() {
     rec_surrendButton.y = game_screenHeight * 0.15f;
     rec_doubledownButton.y = game_screenHeight * 0.22f;
     rec_betButton.y = game_screenHeight * 0.29f;
+
+    rec_endMessage_bg.x = game_screenWidth * 0.2f;
+    rec_endMessage_bg.y = game_screenHeight * 0.3f;
+    rec_endMessage_bg.width = game_screenWidth * 0.5f;
+    rec_endMessage_bg.height = game_screenHeight * 0.4f;
+
+    rec_retryButton.x = game_screenWidth * 0.4f;
+    rec_retryButton.y = game_screenHeight * 0.5f;
+    rec_retryButton.width = game_screenWidth * 0.1f;
+    rec_retryButton.height = game_screenHeight * 0.05f;
+
+    vec_endgameText.x = game_screenWidth * 0.45f;
+    vec_endgameText.y = game_screenHeight * 0.4f;
   }
 }
 
-void DrawEndgameScreen() {
+void DrawEndgameScreen(endgame_state flag_endgame_state) {
   if (flag_endgame_state != 0) {
+
+    DrawRectangleRec(rec_endMessage_bg, GOLD);
+
+    switch (flag_endgame_state) {
+    case WIN:
+      strcpy(str_endMessage, "You Win!");
+      break;
+    case LOSE:
+      strcpy(str_endMessage, "You Lose!");
+      break;
+    case BUST:
+      strcpy(str_endMessage, "Bust! You Lose!");
+      break;
+    case CHARLIE:
+      strcpy(str_endMessage, "Charlie! You Win!");
+      break;
+    case BLACKJACK:
+      strcpy(str_endMessage, "Blackjack!");
+      break;
+    case DRAW:
+      strcpy(str_endMessage, "It's a Draw!");
+      break;
+    }
+
+    font_endmsgSize = game_screenHeight / FONT_ENDMSG_MULT;
+    Vector2 endTextSize =
+        MeasureTextEx(defaultFont, str_endMessage, font_endmsgSize, 2);
+    float end_x = vec_endgameText.x - (endTextSize.x / 2.f);
+    float end_y = vec_endgameText.y - (endTextSize.y / 2.f);
+    Vector2 vec_endmsgPos = (Vector2){end_x, end_y};
+
+    DrawTextEx(defaultFont, str_endMessage, vec_endmsgPos, font_endmsgSize, 2,
+               BROWN);
   }
 }
 
@@ -345,4 +402,5 @@ void DrawEndgameScreen() {
 // [X] add correct scaling to font:
 // [ ] finish adding UI elements to the game screen
 // [ ] add bets
-// [ ] add a win screen
+// [X] add a win screen
+// [ ] finish win screen
