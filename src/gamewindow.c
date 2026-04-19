@@ -42,47 +42,38 @@ typedef enum endgame_state {
   DRAW
 } endgame_state;
 
+typedef enum final_action { CONTINUE = 1, QUIT, RETRY } final_action;
+
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
-void DrawEndgameScreen(endgame_state flag_endgame_state);
+final_action DrawEndgameScreen(endgame_state flag_endgame_state);
 
-Rectangle arr_recPlayerCards[MAX_CARD_NUM] = {0};
-Rectangle arr_recDealerCards[MAX_CARD_NUM] = {0};
+Rectangle arr_recPlayerCards[MAX_CARD_NUM], arr_recDealerCards[MAX_CARD_NUM];
 
-Rectangle button_bg;
-Rectangle rec_hitButton;
-Rectangle rec_standButton;
-Rectangle rec_surrendButton;
-Rectangle rec_doubledownButton;
-Rectangle rec_betButton;
-Rectangle rec_endMessage_bg;
-Rectangle rec_retryButton;
+Rectangle button_bg, rec_hitButton, rec_standButton, rec_surrendButton,
+    rec_doubledownButton, rec_betButton;
+Rectangle rec_endMessage_bg, rec_retryButton;
 
 Vector2 vec_endgameText;
 
-float game_screenWidth = 0.f;
-float game_screenHeight = 0.f;
-float suit_xFromBorder = 0.f;
-float suit_yFromBorder = 0.f;
-float font_suitSize = 0.f;
-float font_cardSize = 0.f;
-float font_defaultSize = 0.f;
-float font_endmsgSize = 0.f;
+float game_screenWidth, game_screenHeight;
+float suit_xFromBorder, suit_yFromBorder;
+float font_suitSize, font_cardSize, font_defaultSize, font_endmsgSize;
 
 // buffer size is meaningless, current maximum: 18 + terminal
 char str_endMessage[32] = "";
 
-Font cardFont;
-Font defaultFont;
+Font cardFont, defaultFont;
 
 bool GameStart(bool is_logged_in) {
 
-  bool hitButtonPressed = false;
-  bool standButtonPressed = false;
-  bool surrendButtonPressed = false;
-  bool doubledownButtonPressed = false;
-  bool betButtonPressed = false;
-  bool flag_end = false;
+  bool hitButtonPressed, standButtonPressed, surrendButtonPressed,
+      doubledownButtonPressed, betButtonPressed;
+  bool flag_end;
+  deck gameDeck;
+  card playerHand[5], dealerHand[5];
+  int playerCardNum, dealerCardNum;
+  int playerHandScore, dealerHandScore;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
 
@@ -91,20 +82,23 @@ bool GameStart(bool is_logged_in) {
                 GetMonitorHeight(GetCurrentMonitor()) / 2);
   SetTargetFPS(30);
 
-  deck gameDeck = FillDeck(DECK_NUM);
+start:
+
+  hitButtonPressed = standButtonPressed = surrendButtonPressed =
+      doubledownButtonPressed = betButtonPressed = false;
+  flag_end = false;
+
+  gameDeck = FillDeck(DECK_NUM);
   ShuffleDeck(&gameDeck);
-  card playerHand[5] = {0};
-  card dealerHand[5] = {0};
 
   for (int i = 0; i < START_CARD_NUM; i++) {
     playerHand[i] = DrawCard(&gameDeck);
     dealerHand[i] = DrawCard(&gameDeck);
   }
 
-  int playerCardNum, dealerCardNum;
   playerCardNum = dealerCardNum = START_CARD_NUM;
-  int playerHandScore = CalcScore(playerHand, playerCardNum);
-  int dealerHandScore = CalcScore(dealerHand, dealerCardNum);
+  playerHandScore = CalcScore(playerHand, playerCardNum);
+  dealerHandScore = CalcScore(dealerHand, dealerCardNum);
 
   // font size inserted here is just a relatively safe size to not have weird
   // stuff. weird stuff can still (and will) happen on high resolution monitors
@@ -203,7 +197,6 @@ bool GameStart(bool is_logged_in) {
         CheckCollisionPointRec(mousePos, rec_surrendButton) ||
         CheckCollisionPointRec(mousePos, rec_doubledownButton) ||
         CheckCollisionPointRec(mousePos, rec_betButton)) {
-
       SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
     } else {
       SetMouseCursor(MOUSE_CURSOR_DEFAULT);
@@ -211,7 +204,12 @@ bool GameStart(bool is_logged_in) {
 
     if (flag_end) {
       endgame_state testState = WIN;
-      DrawEndgameScreen(testState);
+      if (DrawEndgameScreen(testState) == RETRY) {
+        free(gameDeck.cards);
+        UnloadFont(cardFont);
+        goto start; // this is easier to do and easier to understand than any
+                    // other implementation i could do quickly
+      }
     }
 
     EndDrawing();
@@ -360,7 +358,7 @@ void game_UpdateSizes() {
   }
 }
 
-void DrawEndgameScreen(endgame_state flag_endgame_state) {
+final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
   if (flag_endgame_state != 0) {
 
     DrawRectangleRec(rec_endMessage_bg, GOLD);
@@ -395,6 +393,20 @@ void DrawEndgameScreen(endgame_state flag_endgame_state) {
 
     DrawTextEx(defaultFont, str_endMessage, vec_endmsgPos, font_endmsgSize, 2,
                BROWN);
+
+    bool retryButtonPressed = GuiButton(rec_retryButton, "RETRY");
+
+    if (CheckCollisionPointRec(GetMousePosition(), rec_retryButton)) {
+      SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+    } else {
+      SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+
+    if (retryButtonPressed) {
+      return RETRY;
+    } else {
+      return CONTINUE;
+    }
   }
 }
 
@@ -403,4 +415,4 @@ void DrawEndgameScreen(endgame_state flag_endgame_state) {
 // [ ] finish adding UI elements to the game screen
 // [ ] add bets
 // [X] add a win screen
-// [ ] finish win screen
+// [X] finish win screen
