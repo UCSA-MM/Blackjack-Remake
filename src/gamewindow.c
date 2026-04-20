@@ -42,7 +42,7 @@ typedef enum endgame_state {
   DRAW
 } endgame_state;
 
-typedef enum final_action { CONTINUE = 1, QUIT, RETRY } final_action;
+typedef enum final_action { RETRY = 1, CONTINUE } final_action;
 
 void game_DrawCard(card card, Rectangle target);
 void game_UpdateSizes();
@@ -63,13 +63,14 @@ float font_suitSize, font_cardSize, font_defaultSize, font_endmsgSize;
 // buffer size is meaningless, current maximum: 18 + terminal
 char str_endMessage[32] = "";
 
-Font cardFont, defaultFont;
+Font defaultFont, cardFont;
 
 bool GameStart(bool is_logged_in) {
 
   bool hitButtonPressed, standButtonPressed, surrendButtonPressed,
       doubledownButtonPressed, betButtonPressed;
   bool flag_end;
+  bool flag_close;
   deck gameDeck;
   card playerHand[5], dealerHand[5];
   int playerCardNum, dealerCardNum;
@@ -77,16 +78,28 @@ bool GameStart(bool is_logged_in) {
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
 
+  // default font is pixelated, which makes filtering less effective than
+  // leaving as is. size of the imported font is just what seemed to look better
+  // on my device because idk
+  // defaultFont = GetFontDefault();
+  // cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
+  // SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
+
   InitWindow(0, 0, "Blackjack");
   SetWindowSize(GetMonitorWidth(GetCurrentMonitor()) / 2,
                 GetMonitorHeight(GetCurrentMonitor()) / 2);
   SetTargetFPS(30);
+
+  defaultFont = GetFontDefault();
+  cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
+  SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
 
 start:
 
   hitButtonPressed = standButtonPressed = surrendButtonPressed =
       doubledownButtonPressed = betButtonPressed = false;
   flag_end = false;
+  flag_close = false;
 
   gameDeck = FillDeck(DECK_NUM);
   ShuffleDeck(&gameDeck);
@@ -100,16 +113,23 @@ start:
   playerHandScore = CalcScore(playerHand, playerCardNum);
   dealerHandScore = CalcScore(dealerHand, dealerCardNum);
 
-  // font size inserted here is just a relatively safe size to not have weird
-  // stuff. weird stuff can still (and will) happen on high resolution monitors
-  cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
-  defaultFont = GetFontDefault();
-  SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
-  // default font is not set because it is a pixel type font
-
   // start of program
 
-  while (!WindowShouldClose()) {
+  while (!flag_close) {
+
+    if (WindowShouldClose()) {
+
+      free(gameDeck.cards);
+      UnloadFont(cardFont);
+
+      if (IsKeyDown(KEY_ESCAPE)) {
+        CloseWindow();
+        return true;
+      } else {
+        CloseWindow();
+        return false;
+      }
+    }
 
     if (playerCardNum < MAX_CARD_NUM && playerHandScore < 21) {
       if (hitButtonPressed || doubledownButtonPressed) {
@@ -203,20 +223,31 @@ start:
     }
 
     if (flag_end) {
-      endgame_state testState = WIN;
-      if (DrawEndgameScreen(testState) == RETRY) {
+
+      endgame_state endResult;
+
+      if (playerHandScore > 21) {
+        endResult = BUST;
+      } else if (playerHandScore == 21) {
+        endResult = BLACKJACK;
+      } else if (playerCardNum == MAX_CARD_NUM) {
+        endResult = CHARLIE;
+      } else if (playerHandScore > dealerHandScore || dealerHandScore > 21) {
+        endResult = WIN;
+      } else if (dealerHandScore > playerHandScore) {
+        endResult = LOSE;
+      } else {
+        endResult = DRAW;
+      }
+
+      if (DrawEndgameScreen(endResult) == RETRY) {
         free(gameDeck.cards);
-        UnloadFont(cardFont);
-        goto start; // this is easier to do and easier to understand than any
-                    // other implementation i could do quickly
+        goto start;
       }
     }
 
     EndDrawing();
   }
-
-  free(gameDeck.cards);
-  UnloadFont(cardFont);
   return false;
 }
 
@@ -408,11 +439,9 @@ final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
       return CONTINUE;
     }
   }
+  return CONTINUE;
 }
 
 // TODO:
-// [X] add correct scaling to font:
-// [ ] finish adding UI elements to the game screen
-// [ ] add bets
-// [X] add a win screen
-// [X] finish win screen
+// [] Create a function to correctly handle the cursor aspect change without
+// previous flickering in the end screen

@@ -1,9 +1,9 @@
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
 #include "gamemenu.h"
 #include "raygui.h"
 #include "raylib.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 // #include "blackjackclient.h"
 
 float menu_screenWidth = 0.f;
@@ -40,3 +40,12 @@ bool StartMenu() {
   CloseWindow();
   return true;
 }
+
+// TODO:
+// [] Add a button to start playing the game to replace the current window
+// closing system
+// [] create a button to start a login or registration procedure
+// [] create the login/register UI
+// NOTE:
+// login/register UI *must* be able to store data inserted by the user so that
+// it can be later sent to the server

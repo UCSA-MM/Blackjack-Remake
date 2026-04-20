@@ -10,10 +10,13 @@
 
 int main(void) {
 
-  bool isLoggedIn = StartMenu();
-  bool repeat;
+  bool backToMenu, isLoggedIn;
   do {
-    repeat = GameStart(isLoggedIn);
-  } while (repeat == true);
+    isLoggedIn = StartMenu();
+    backToMenu = GameStart(isLoggedIn);
+  } while (backToMenu == true);
   return 0;
 }
+// TODO:
+// [] remove temp interaction between closing menu and starting game
+// [] find what causes unwanted texture unloading
