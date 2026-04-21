@@ -208,16 +208,7 @@ start:
     doubledownButtonPressed = GuiButton(rec_doubledownButton, "DOUBLE!");
     betButtonPressed = GuiButton(rec_betButton, "BET!");
 
-    Vector2 mousePos = GetMousePosition();
-    if (CheckCollisionPointRec(mousePos, rec_hitButton) ||
-        CheckCollisionPointRec(mousePos, rec_standButton) ||
-        CheckCollisionPointRec(mousePos, rec_surrendButton) ||
-        CheckCollisionPointRec(mousePos, rec_doubledownButton) ||
-        CheckCollisionPointRec(mousePos, rec_betButton)) {
-      SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-    } else {
-      SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-    }
+    game_UpdateCursor();
 
     if (flag_end) {
 
@@ -424,11 +415,7 @@ final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
 
     bool retryButtonPressed = GuiButton(rec_retryButton, "RETRY");
 
-    if (CheckCollisionPointRec(GetMousePosition(), rec_retryButton)) {
-      SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
-    } else {
-      SetMouseCursor(MOUSE_CURSOR_DEFAULT);
-    }
+    game_UpdateCursor();
 
     if (retryButtonPressed) {
       return RETRY;
@@ -437,6 +424,23 @@ final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
     }
   }
   return CONTINUE;
+}
+
+void game_UpdateCursor() {
+  Vector2 mousePos = GetMousePosition();
+  bool isCollidingWithButtons =
+      CheckCollisionPointRec(mousePos, rec_hitButton) ||
+      CheckCollisionPointRec(mousePos, rec_standButton) ||
+      CheckCollisionPointRec(mousePos, rec_surrendButton) ||
+      CheckCollisionPointRec(mousePos, rec_doubledownButton) ||
+      CheckCollisionPointRec(mousePos, rec_betButton) ||
+      CheckCollisionPointRec(mousePos, rec_retryButton);
+
+  if (isCollidingWithButtons) {
+    SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
+  } else {
+    SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+  }
 }
 
 // TODO:
