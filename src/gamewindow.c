@@ -81,16 +81,13 @@ bool GameStart(bool is_logged_in) {
   // default font is pixelated, which makes filtering less effective than
   // leaving as is. size of the imported font is just what seemed to look better
   // on my device because idk
-  // defaultFont = GetFontDefault();
-  // cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
-  // SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
-
   InitWindow(0, 0, "Blackjack");
   SetWindowSize(GetMonitorWidth(GetCurrentMonitor()) / 2,
                 GetMonitorHeight(GetCurrentMonitor()) / 2);
   SetTargetFPS(30);
 
   defaultFont = GetFontDefault();
+  GuiSetFont(defaultFont);
   cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
   SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
 
