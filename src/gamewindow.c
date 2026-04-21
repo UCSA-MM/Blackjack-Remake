@@ -8,31 +8,40 @@
 // #include "blackjackclient.h"
 #include "gamewindow.h"
 
-// game options are in the header file
+// game options not tied to the interface (and that can be changed without
+// causing issues, at least i think) are located as define statements in the
+// header.
 #define MAX_CARD_NUM 5
-// all of the values defined for card size were done with math i forgot about,
-// but they work
+
+// values for the card are supposed to be a percentage of the screen.
 #define CARD_WIDTH 0.156f
 #define CARD_X_START 0.03f
 #define CARD_X_STEP 0.171f
 #define DEALER_CARD_Y 0.1f
 #define PLAYER_CARD_Y 0.55f
 #define CARD_HEIGHT 0.35f
-// size * defined value = screen height
-// initially it was a window with height 625 and the two values were 32 and 128
+
+// these numbers have no real meaning aside from the fact that they didn't look
+// bad. The usage is that size * defined value = screen height.
+// This was obtained from other arbitrary values that were initially defined on
+// a window with height of 625px, then they were converted for my current laptop
+// screen height. It is one of the worst ways to implement this i can think of
+// but it works.
 #define FONT_SUIT_MULT 19.5f
 #define FONT_CARD_MULT 4.8f
 #define FONT_DEFAULT_MULT 30.f
 #define FONT_ENDMSG_MULT 10.f
-// the currently in use font uses these characters to represent suit symbols and
-// other special characters
+
+// the card font used has this characters as suits or other special characters.
+// NARROW10 is a 10 not composed of the sequence of 1 and 0 but made of a
+// standalone glyph. all the values are strings because i think them being
+// strings is needed for the text drawing functions from raylib.
 #define CLUBS "]"
 #define DIAMONDS "["
 #define HEARTS "{"
 #define SPADES "}"
 #define NARROW10 "="
 
-// enum for game end flags
 typedef enum endgame_state {
   WIN = 1,
   LOSE,
@@ -42,9 +51,15 @@ typedef enum endgame_state {
   DRAW
 } endgame_state;
 
+// this is basically used as a flag for the execution of a jump. In this
+// context, CONTINUE means to keep drawing the end screen while retry means
+// executing the jump to restart.
 typedef enum final_action { RETRY = 1, CONTINUE } final_action;
 
 void game_DrawCard(card card, Rectangle target);
+
+// function used to check for updates to the size of the window and to resize
+// the elements accordingly
 void game_UpdateSizes();
 final_action DrawEndgameScreen(endgame_state flag_endgame_state);
 
@@ -87,16 +102,19 @@ bool GameStart(bool is_logged_in) {
   SetTargetFPS(30);
 
   defaultFont = GetFontDefault();
-  GuiSetFont(defaultFont);
+  GuiSetFont(defaultFont); // necessary due to issues with how raygui handles
+                           // fonts unloading after closing a window
   cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
   SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
 
+// when pressing retry, the program jumps to this label to avoid doing tasks
+// like loading fonts again and to not redeclare variables.
 start:
 
   hitButtonPressed = standButtonPressed = surrendButtonPressed =
       doubledownButtonPressed = betButtonPressed = false;
-  flag_end = false;
-  flag_close = false;
+  flag_end = false;   // draw the end screen?
+  flag_close = false; // go back to menu?
 
   gameDeck = FillDeck(DECK_NUM);
   ShuffleDeck(&gameDeck);
@@ -110,7 +128,7 @@ start:
   playerHandScore = CalcScore(playerHand, playerCardNum);
   dealerHandScore = CalcScore(dealerHand, dealerCardNum);
 
-  // start of program
+  // Game Loop Start
 
   while (!flag_close) {
 
@@ -119,6 +137,9 @@ start:
       free(gameDeck.cards);
       UnloadFont(cardFont);
 
+      // the idea of this is, when pressing escape it is seen as wanting to go
+      // back to the starting menu (to login again or smth), while manually
+      // closing the window means you just want to close the app
       if (IsKeyDown(KEY_ESCAPE)) {
         CloseWindow();
         return true;
@@ -151,9 +172,10 @@ start:
 
     BeginDrawing();
 
-    // draw initial table state
-
     ClearBackground(DARKGREEN);
+
+    // draws the card in hand and then draws all empty spaces in green since
+    // they are empty.
 
     for (int i = 0; i < playerCardNum; i++) {
       game_DrawCard(playerHand[i], arr_recPlayerCards[i]);
@@ -174,7 +196,7 @@ start:
     if (!flag_end) {
 
       // only the first card is shown to the player while the others are face
-      // down
+      // down. Drawing generally works as above.
       game_DrawCard(dealerHand[0], arr_recDealerCards[0]);
 
       for (int i = 1; i < MAX_CARD_NUM; i++) {
@@ -196,8 +218,6 @@ start:
         }
       }
     }
-
-    // setup of other UI elements
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, font_defaultSize);
 
@@ -240,7 +260,6 @@ start:
 }
 
 void game_DrawCard(card card, Rectangle target) {
-  // card text to be implemented
 
   char suitStr[2] = "";
   Color textColor;
@@ -263,6 +282,7 @@ void game_DrawCard(card card, Rectangle target) {
 
   Vector2 suit_textSize = MeasureTextEx(cardFont, suitStr, font_suitSize, 0);
 
+  // handling of positioning of card text
   float suit_leftX = target.x + suit_xFromBorder - (suit_textSize.x / 2.f);
   float suit_rightX =
       target.x + target.width - suit_xFromBorder - (suit_textSize.x / 2.f);
@@ -284,6 +304,8 @@ void game_DrawCard(card card, Rectangle target) {
   char arr_rankStr[][2] = {"A", "2", "3",      "4", "5", "6", "7",
                            "8", "9", NARROW10, "J", "Q", "K"};
 
+  // the value of a card can still be stored as a number, and as long as the
+  // rankStr array is ordered the text will match
   strcpy(rankStr, arr_rankStr[card.rank - 1]);
 
   Vector2 rank_textSize = MeasureTextEx(cardFont, rankStr, font_cardSize, 2);
@@ -315,14 +337,20 @@ void game_UpdateSizes() {
     arr_recPlayerCards[i].height = CARD_HEIGHT * game_screenHeight;
     arr_recDealerCards[i].height = arr_recPlayerCards[i].height;
 
-    // we are basically finding the diagonal of a smaller rectangle with the
-    // same ratio if x = y * ratio, the diagonal will be sqrtf(y^2 *
-    // (1+ratio^2)). we can find y from this result and consequentially find x
-    // to get the values to position the suit symbols we are using this on a
-    // segment of the diagonal equal to 10% of its size to have a relative
-    // position on the card. all the calculations are done relative to the card,
-    // not absolute to the window. if this isn't clear, idk how to explain it
-    // better without making this too long so have fun
+    // After finding the x/y ratio so that x = y * ratio, we can create a
+    // rectangle similar to the card rectangle.
+    // This rectangle is positioned with one of its vertices in the upper left
+    // corner of the card, and another vertex in the position where we want to
+    // place the seed symbol.
+    // The size of the diagonal of one of these rectangles will be found with
+    // the formula sqrtf(y^2 * / (1 + ratio^2)).
+    // We can find the size of the diagonal of the smaller rectangle by applying
+    // a percentage on the size of the diagonal of the card rectangle.
+    // After that, we can substitute the ratio and the size into the previous
+    // formula and solve it for the y variable, which we can then use to find
+    // the x.
+    // This gives us the coordinates of the bottom right angle, which we can use
+    // to find the offset to apply to the seed symbol.
     float cWidth = CARD_WIDTH * game_screenWidth;
     float cHeight = CARD_HEIGHT * game_screenHeight;
     float ratio = cWidth / cHeight;
@@ -444,5 +472,7 @@ void game_UpdateCursor() {
 }
 
 // TODO:
-// [] Create a function to correctly handle the cursor aspect change without
+// [X] Create a function to correctly handle the cursor aspect change without
 // previous flickering in the end screen
+// [ ] Add bets support
+// [ ] Add a proper implementation of double down

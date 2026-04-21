@@ -1,5 +1,5 @@
-#ifndef CARD_INCLUDED_LONG_DEFINE_NAME
-#define CARD_INCLUDED_LONG_DEFINE_NAME
+#ifndef CARDS_H
+#define CARDS_H
 
 typedef struct card {
   int rank;
