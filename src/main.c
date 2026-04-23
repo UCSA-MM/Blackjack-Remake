@@ -18,5 +18,5 @@ int main(void) {
   return 0;
 }
 // TODO:
-// [] remove temp interaction between closing menu and starting game
-// [] find what causes unwanted texture unloading
+// [X] remove temp interaction between closing menu and starting game
+// [X] find what causes unwanted texture unloading

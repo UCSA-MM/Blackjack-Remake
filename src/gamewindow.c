@@ -476,3 +476,4 @@ void game_UpdateCursor() {
 // previous flickering in the end screen
 // [ ] Add bets support
 // [ ] Add a proper implementation of double down
+// [ ] Update the cursor update function again to prevent issues on overlaps
