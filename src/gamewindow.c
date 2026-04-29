@@ -61,6 +61,7 @@ void game_DrawCard(card card, Rectangle target);
 // function used to check for updates to the size of the window and to resize
 // the elements accordingly
 void game_UpdateSizes();
+void game_UpdateCursor();
 final_action DrawEndgameScreen(endgame_state flag_endgame_state);
 
 Rectangle arr_recPlayerCards[MAX_CARD_NUM], arr_recDealerCards[MAX_CARD_NUM];
@@ -78,7 +79,7 @@ float font_suitSize, font_cardSize, font_defaultSize, font_endmsgSize;
 // buffer size is meaningless, current maximum: 18 + terminal
 char str_endMessage[32] = "";
 
-Font defaultFont, cardFont;
+Font game_defaultFont, game_cardFont;
 
 bool GameStart(bool is_logged_in) {
 
@@ -101,11 +102,12 @@ bool GameStart(bool is_logged_in) {
                 GetMonitorHeight(GetCurrentMonitor()) / 2);
   SetTargetFPS(30);
 
-  defaultFont = GetFontDefault();
-  GuiSetFont(defaultFont); // necessary due to issues with how raygui handles
-                           // fonts unloading after closing a window
-  cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
-  SetTextureFilter(cardFont.texture, TEXTURE_FILTER_BILINEAR);
+  game_defaultFont = GetFontDefault();
+  GuiSetFont(
+      game_defaultFont); // necessary due to issues with how raygui handles
+                         // fonts unloading after closing a window
+  game_cardFont = LoadFontEx("../assets/cardcharacters.ttf", 256, 0, 250);
+  SetTextureFilter(game_cardFont.texture, TEXTURE_FILTER_BILINEAR);
 
 // when pressing retry, the program jumps to this label to avoid doing tasks
 // like loading fonts again and to not redeclare variables.
@@ -135,11 +137,13 @@ start:
     if (WindowShouldClose()) {
 
       free(gameDeck.cards);
-      UnloadFont(cardFont);
+      UnloadFont(game_cardFont);
 
       // the idea of this is, when pressing escape it is seen as wanting to go
       // back to the starting menu (to login again or smth), while manually
       // closing the window means you just want to close the app
+      // this would break if you managed to only keep the key down for 1/60th of
+      // a second, but it shouldnt be possible
       if (IsKeyDown(KEY_ESCAPE)) {
         CloseWindow();
         return true;
@@ -280,7 +284,8 @@ void game_DrawCard(card card, Rectangle target) {
 
   DrawRectangleRec(target, RAYWHITE);
 
-  Vector2 suit_textSize = MeasureTextEx(cardFont, suitStr, font_suitSize, 0);
+  Vector2 suit_textSize =
+      MeasureTextEx(game_cardFont, suitStr, font_suitSize, 0);
 
   // handling of positioning of card text
   float suit_leftX = target.x + suit_xFromBorder - (suit_textSize.x / 2.f);
@@ -295,10 +300,12 @@ void game_DrawCard(card card, Rectangle target) {
   Vector2 suit_topLeft = (Vector2){suit_leftX, suit_topY};
   Vector2 suit_topRight = (Vector2){suit_rightX, suit_topY};
 
-  DrawTextEx(cardFont, suitStr, suit_botLeft, font_suitSize, 0, textColor);
-  DrawTextEx(cardFont, suitStr, suit_botRight, font_suitSize, 0, textColor);
-  DrawTextEx(cardFont, suitStr, suit_topLeft, font_suitSize, 0, textColor);
-  DrawTextEx(cardFont, suitStr, suit_topRight, font_suitSize, 0, textColor);
+  DrawTextEx(game_cardFont, suitStr, suit_botLeft, font_suitSize, 0, textColor);
+  DrawTextEx(game_cardFont, suitStr, suit_botRight, font_suitSize, 0,
+             textColor);
+  DrawTextEx(game_cardFont, suitStr, suit_topLeft, font_suitSize, 0, textColor);
+  DrawTextEx(game_cardFont, suitStr, suit_topRight, font_suitSize, 0,
+             textColor);
 
   char rankStr[2] = "";
   char arr_rankStr[][2] = {"A", "2", "3",      "4", "5", "6", "7",
@@ -308,14 +315,15 @@ void game_DrawCard(card card, Rectangle target) {
   // rankStr array is ordered the text will match
   strcpy(rankStr, arr_rankStr[card.rank - 1]);
 
-  Vector2 rank_textSize = MeasureTextEx(cardFont, rankStr, font_cardSize, 2);
+  Vector2 rank_textSize =
+      MeasureTextEx(game_cardFont, rankStr, font_cardSize, 2);
 
   float rank_x = target.x + (target.width / 2.f) - (rank_textSize.x / 2.f);
   float rank_y = target.y + (target.height / 2.f) - (rank_textSize.y / 2.f);
 
   Vector2 rank_pos = (Vector2){rank_x, rank_y};
 
-  DrawTextEx(cardFont, rankStr, rank_pos, font_cardSize, 2, textColor);
+  DrawTextEx(game_cardFont, rankStr, rank_pos, font_cardSize, 2, textColor);
 }
 
 void game_UpdateSizes() {
@@ -433,13 +441,13 @@ final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
 
     font_endmsgSize = game_screenHeight / FONT_ENDMSG_MULT;
     Vector2 endTextSize =
-        MeasureTextEx(defaultFont, str_endMessage, font_endmsgSize, 2);
+        MeasureTextEx(game_defaultFont, str_endMessage, font_endmsgSize, 2);
     float end_x = vec_endgameText.x - (endTextSize.x / 2.f);
     float end_y = vec_endgameText.y - (endTextSize.y / 2.f);
     Vector2 vec_endmsgPos = (Vector2){end_x, end_y};
 
-    DrawTextEx(defaultFont, str_endMessage, vec_endmsgPos, font_endmsgSize, 2,
-               BROWN);
+    DrawTextEx(game_defaultFont, str_endMessage, vec_endmsgPos, font_endmsgSize,
+               2, BROWN);
 
     bool retryButtonPressed = GuiButton(rec_retryButton, "RETRY");
 

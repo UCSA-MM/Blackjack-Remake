@@ -6,23 +6,33 @@
 #include <string.h>
 // #include "blackjackclient.h"
 
+#define WHITE_32 0xffffffff
+#define BLUE_TRANSP_32 0x97E8FF80
+
 bool AccountInterface(bool isRegister);
 
 float menu_screenWidth = 0.f;
 float menu_screenHeight = 0.f;
-Rectangle rec_PlayButton, rec_LoginButton, rec_RegisterButton;
-Font defaultFont, titleFont;
+Font menu_defaultFont, menu_titleFont;
 
 bool StartMenu() {
 
+  Rectangle rec_PlayButton, rec_LoginButton, rec_RegisterButton;
+
   SetConfigFlags(FLAG_MSAA_4X_HINT);
+  GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, WHITE_32);
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, WHITE_32);
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, WHITE_32);
+  GuiSetStyle(TEXTBOX, BASE_COLOR_PRESSED, BLUE_TRANSP_32);
+
   InitWindow(0, 0, "Blackjack Login");
   SetWindowSize(GetMonitorWidth(GetCurrentMonitor()) / 2,
                 GetMonitorHeight(GetCurrentMonitor()) / 2);
   SetTargetFPS(30);
 
-  defaultFont = GetFontDefault();
-  GuiSetFont(defaultFont);
+  menu_defaultFont = GetFontDefault();
+  GuiSetFont(menu_defaultFont);
 
   menu_screenWidth = (float)GetScreenWidth();
   menu_screenHeight = (float)GetScreenHeight();
@@ -31,7 +41,7 @@ bool StartMenu() {
   titleVec.x = menu_screenWidth * 0.03f;
   titleVec.y = menu_screenHeight * 0.03f;
 
-  titleFont = LoadFontEx("../assets/cardcharacters.ttf", 128, 0, 250);
+  menu_titleFont = LoadFontEx("../assets/cardcharacters.ttf", 128, 0, 250);
 
   rec_PlayButton.x = rec_LoginButton.x = rec_RegisterButton.x =
       menu_screenWidth * 0.05f;
@@ -45,7 +55,7 @@ bool StartMenu() {
 
   bool playButtonPressed, loginButtonPressed, registerButtonPressed;
   bool isCollidingWithMenuButtons;
-  bool isOnline;
+  bool isOnline = false;
 
   while (!WindowShouldClose()) {
 
@@ -53,21 +63,11 @@ bool StartMenu() {
 
     ClearBackground(DARKGREEN);
 
-    DrawTextEx(titleFont, "BLACKJACK", titleVec, 128, 5, WHITE);
+    DrawTextEx(menu_titleFont, "BLACKJACK", titleVec, 128, 5, WHITE);
 
     playButtonPressed = GuiButton(rec_PlayButton, "PLAY");
     loginButtonPressed = GuiButton(rec_LoginButton, "LOGIN");
     registerButtonPressed = GuiButton(rec_RegisterButton, "REGISTER");
-
-    if (playButtonPressed) {
-      UnloadFont(titleFont);
-      CloseWindow();
-      return isOnline;
-    } else if (loginButtonPressed) {
-      isOnline = AccountInterface(false);
-    } else if (registerButtonPressed) {
-      isOnline = AccountInterface(true);
-    }
 
     Vector2 mousePos = GetMousePosition();
     isCollidingWithMenuButtons =
@@ -81,14 +81,69 @@ bool StartMenu() {
     }
 
     EndDrawing();
+
+    if (playButtonPressed) {
+      UnloadFont(menu_titleFont);
+      CloseWindow();
+      return isOnline;
+    } else if (loginButtonPressed) {
+      isOnline = AccountInterface(false);
+    } else if (registerButtonPressed) {
+      isOnline = AccountInterface(true);
+    }
   }
 
-  UnloadFont(titleFont);
+  UnloadFont(menu_titleFont);
   CloseWindow();
   exit(0);
 }
 
-bool AccountInterface(bool isRegister) { return false; }
+bool AccountInterface(bool isRegister) {
+
+  bool usernameTextEdit = false, passwordTextEdit = false;
+  Rectangle rec_UserInput, rec_PassInput;
+  char str_Username[32] = "";
+  char str_Password[32] = "";
+  Vector2 vec_UsernameLabelPos =
+              (Vector2){menu_screenWidth * 0.1f, menu_screenHeight * 0.15f},
+          vec_PasswordLabelPos =
+              (Vector2){vec_UsernameLabelPos.x, menu_screenHeight * 0.4f};
+  rec_UserInput.x = rec_PassInput.x = menu_screenWidth * 0.1f;
+  rec_UserInput.y = menu_screenHeight * 0.2f;
+  rec_PassInput.y = menu_screenHeight * 0.45f;
+  rec_UserInput.width = rec_PassInput.width = menu_screenWidth * 0.5f;
+  rec_UserInput.height = rec_PassInput.height = menu_screenHeight * 0.15f;
+
+  while (!WindowShouldClose()) {
+
+    BeginDrawing();
+
+    ClearBackground(DARKGREEN);
+
+    if (GuiTextBox(rec_UserInput, str_Username, 32 - 1, usernameTextEdit)) {
+      usernameTextEdit = !usernameTextEdit;
+    }
+    if (GuiTextBox(rec_PassInput, str_Password, 32 - 1, passwordTextEdit)) {
+      passwordTextEdit = !passwordTextEdit;
+    }
+
+    DrawTextEx(menu_defaultFont, "USERNAME", vec_UsernameLabelPos, 32, 5,
+               WHITE);
+    DrawTextEx(menu_defaultFont, "PASSWORD", vec_PasswordLabelPos, 32, 5,
+               WHITE);
+
+    if (CheckCollisionPointRec(GetMousePosition(), rec_UserInput) ||
+        CheckCollisionPointRec(GetMousePosition(), rec_PassInput)) {
+      SetMouseCursor(MOUSE_CURSOR_IBEAM);
+    } else {
+      SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+
+    EndDrawing();
+  }
+
+  return false;
+}
 
 // TODO:
 // [X] Add a button to start playing the game to replace the current window
