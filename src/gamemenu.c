@@ -101,9 +101,12 @@ bool StartMenu() {
 bool AccountInterface(bool isRegister) {
 
   bool usernameTextEdit = false, passwordTextEdit = false;
+  bool actionButtonPressed = false, backButtonPressed = false;
   Rectangle rec_UserInput, rec_PassInput;
+  Rectangle rec_ActionButton, rec_BackButton;
   char str_Username[32] = "";
   char str_Password[32] = "";
+  char str_ActionText[10] = "";
   Vector2 vec_UsernameLabelPos =
               (Vector2){menu_screenWidth * 0.1f, menu_screenHeight * 0.15f},
           vec_PasswordLabelPos =
@@ -113,6 +116,16 @@ bool AccountInterface(bool isRegister) {
   rec_PassInput.y = menu_screenHeight * 0.45f;
   rec_UserInput.width = rec_PassInput.width = menu_screenWidth * 0.5f;
   rec_UserInput.height = rec_PassInput.height = menu_screenHeight * 0.15f;
+  rec_ActionButton.x = menu_screenWidth * 0.12f;
+  rec_BackButton.x = menu_screenWidth * 0.35f;
+  rec_ActionButton.y = rec_BackButton.y = menu_screenHeight * 0.75f;
+  rec_ActionButton.width = rec_BackButton.width = menu_screenWidth * 0.2f;
+  rec_ActionButton.height = rec_BackButton.height = menu_screenHeight * 0.1f;
+  if (isRegister) {
+    strcpy(str_ActionText, "REGISTER");
+  } else {
+    strcpy(str_ActionText, "LOGIN");
+  }
 
   while (!WindowShouldClose()) {
 
@@ -132,14 +145,26 @@ bool AccountInterface(bool isRegister) {
     DrawTextEx(menu_defaultFont, "PASSWORD", vec_PasswordLabelPos, 32, 5,
                WHITE);
 
+    actionButtonPressed = GuiButton(rec_ActionButton, str_ActionText);
+    backButtonPressed = GuiButton(rec_BackButton, "BACK");
+
     if (CheckCollisionPointRec(GetMousePosition(), rec_UserInput) ||
         CheckCollisionPointRec(GetMousePosition(), rec_PassInput)) {
       SetMouseCursor(MOUSE_CURSOR_IBEAM);
+    } else if (CheckCollisionPointRec(GetMousePosition(), rec_ActionButton) ||
+               CheckCollisionPointRec(GetMousePosition(), rec_BackButton)) {
+      SetMouseCursor(MOUSE_CURSOR_POINTING_HAND);
     } else {
       SetMouseCursor(MOUSE_CURSOR_DEFAULT);
     }
 
     EndDrawing();
+
+    if (backButtonPressed) {
+      return false;
+    } else if (actionButtonPressed) {
+      return false;
+    }
   }
 
   return false;
@@ -149,7 +174,9 @@ bool AccountInterface(bool isRegister) {
 // [X] Add a button to start playing the game to replace the current window
 // closing system
 // [X] create a button to start a login or registration procedure
-// [ ] create the login/register UI
+// [X] create the login/register UI
+// [ ] add functionality to the buttons
+// [ ] fix the size of buttons in the register UI
 
 // NOTE:
 // login/register UI *must* be able to store data inserted by the user so that
