@@ -92,7 +92,7 @@ bool GameStart(bool is_logged_in) {
   int playerCardNum, dealerCardNum;
   int playerHandScore, dealerHandScore;
 
-  SetConfigFlags(FLAG_MSAA_4X_HINT);
+  SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE);
 
   // default font is pixelated, which makes filtering less effective than
   // leaving as is. size of the imported font is just what seemed to look better

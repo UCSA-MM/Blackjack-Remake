@@ -20,6 +20,8 @@ bool StartMenu() {
   Rectangle rec_PlayButton, rec_LoginButton, rec_RegisterButton;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
+  // the window is technically not resizable but on WSL it is not working for
+  // some reason, cool stuff
   GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
   GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, WHITE_32);
   GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, WHITE_32);
@@ -117,9 +119,9 @@ bool AccountInterface(bool isRegister) {
   rec_UserInput.width = rec_PassInput.width = menu_screenWidth * 0.5f;
   rec_UserInput.height = rec_PassInput.height = menu_screenHeight * 0.15f;
   rec_ActionButton.x = menu_screenWidth * 0.12f;
-  rec_BackButton.x = menu_screenWidth * 0.35f;
+  rec_BackButton.x = menu_screenWidth * 0.40f;
   rec_ActionButton.y = rec_BackButton.y = menu_screenHeight * 0.75f;
-  rec_ActionButton.width = rec_BackButton.width = menu_screenWidth * 0.2f;
+  rec_ActionButton.width = rec_BackButton.width = menu_screenWidth * 0.25f;
   rec_ActionButton.height = rec_BackButton.height = menu_screenHeight * 0.1f;
   if (isRegister) {
     strcpy(str_ActionText, "REGISTER");
@@ -176,7 +178,7 @@ bool AccountInterface(bool isRegister) {
 // [X] create a button to start a login or registration procedure
 // [X] create the login/register UI
 // [ ] add functionality to the buttons
-// [ ] fix the size of buttons in the register UI
+// [X] fix the size of buttons in the register UI
 
 // NOTE:
 // login/register UI *must* be able to store data inserted by the user so that
