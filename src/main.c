@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #define RAYGUI_IMPLEMENTATION
-#include "blackjackclient.h"
+#include "gameclient.h"
 #include "gamemenu.h"
 #include "gamewindow.h"
 #include "raygui.h"

@@ -23,7 +23,7 @@ bool startConnection() {
 
   returnVal = getaddrinfo(NULL, "27015", &hints, &addrinfoResult);
   if (returnVal != 0) {
-    printf("error in getaddrinfo()");
+    perror("error in getaddrinfo()");
     freeaddrinfo(addrinfoResult);
     return false;
   }
@@ -31,7 +31,7 @@ bool startConnection() {
   activeSocket = socket(addrinfoResult->ai_family, addrinfoResult->ai_socktype,
                         addrinfoResult->ai_protocol);
   if (activeSocket == -1) {
-    printf("error in socket()");
+    perror("error in socket()");
     freeaddrinfo(addrinfoResult);
     return false;
   }
@@ -39,7 +39,7 @@ bool startConnection() {
   returnVal = connect(activeSocket, addrinfoResult->ai_addr,
                       (int)addrinfoResult->ai_addrlen);
   if (returnVal == -1) {
-    printf("error in connect()");
+    perror("error in connect()");
     freeaddrinfo(addrinfoResult);
     close(activeSocket);
     return false;
@@ -58,11 +58,14 @@ bool serverLogin(char username[], char password[], bool isRegister) {
   char qbuf[32] = "";
   char recvbuf[32] = "";
 
-  sprintf_s(qbuf, 32, "Username:%s", username);
+  sprintf(qbuf, "Username:%s", username);
   returnVal = send(activeSocket, qbuf, 32, 0);
   if (returnVal == -1) {
-    printf("error at send()");
+    perror("error at send()");
     close(activeSocket);
     return false;
   }
+
+  close(activeSocket);
+  return true;
 }

@@ -1,5 +1,5 @@
 #include "gamemenu.h"
-#include "blackjackclient.h"
+#include "gameclient.h"
 #include "raygui.h"
 #include "raylib.h"
 #include <stdbool.h>
@@ -105,6 +105,7 @@ bool AccountInterface(bool isRegister) {
 
   bool usernameTextEdit = false, passwordTextEdit = false;
   bool actionButtonPressed = false, backButtonPressed = false;
+  bool qResult;
   Rectangle rec_UserInput, rec_PassInput;
   Rectangle rec_ActionButton, rec_BackButton;
   char str_Username[FIELD_MAX_SIZE] = "";
@@ -168,7 +169,7 @@ bool AccountInterface(bool isRegister) {
     if (backButtonPressed) {
       return false;
     } else if (actionButtonPressed) {
-      return false;
+      qResult = serverLogin(str_Username, str_Password, isRegister);
     }
   }
 

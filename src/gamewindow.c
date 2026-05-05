@@ -1,6 +1,6 @@
 #include "gamewindow.h"
-#include "blackjackclient.h"
 #include "cards.h"
+#include "gameclient.h"
 #include "raygui.h"
 #include "raylib.h"
 #include <math.h>
