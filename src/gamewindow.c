@@ -1,3 +1,5 @@
+#include "gamewindow.h"
+#include "blackjackclient.h"
 #include "cards.h"
 #include "raygui.h"
 #include "raylib.h"
@@ -5,8 +7,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-// #include "blackjackclient.h"
-#include "gamewindow.h"
 
 // game options not tied to the interface (and that can be changed without
 // causing issues, at least i think) are located as define statements in the

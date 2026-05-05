@@ -1,13 +1,14 @@
 #include "gamemenu.h"
+#include "blackjackclient.h"
 #include "raygui.h"
 #include "raylib.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-// #include "blackjackclient.h"
 
 #define WHITE_32 0xffffffff
 #define BLUE_TRANSP_32 0x97E8FF80
+#define FIELD_MAX_SIZE 16
 
 bool AccountInterface(bool isRegister);
 
@@ -106,8 +107,8 @@ bool AccountInterface(bool isRegister) {
   bool actionButtonPressed = false, backButtonPressed = false;
   Rectangle rec_UserInput, rec_PassInput;
   Rectangle rec_ActionButton, rec_BackButton;
-  char str_Username[32] = "";
-  char str_Password[32] = "";
+  char str_Username[FIELD_MAX_SIZE] = "";
+  char str_Password[FIELD_MAX_SIZE] = "";
   char str_ActionText[10] = "";
   Vector2 vec_UsernameLabelPos =
               (Vector2){menu_screenWidth * 0.1f, menu_screenHeight * 0.15f},
@@ -135,10 +136,12 @@ bool AccountInterface(bool isRegister) {
 
     ClearBackground(DARKGREEN);
 
-    if (GuiTextBox(rec_UserInput, str_Username, 32 - 1, usernameTextEdit)) {
+    if (GuiTextBox(rec_UserInput, str_Username, FIELD_MAX_SIZE - 1,
+                   usernameTextEdit)) {
       usernameTextEdit = !usernameTextEdit;
     }
-    if (GuiTextBox(rec_PassInput, str_Password, 32 - 1, passwordTextEdit)) {
+    if (GuiTextBox(rec_PassInput, str_Password, FIELD_MAX_SIZE - 1,
+                   passwordTextEdit)) {
       passwordTextEdit = !passwordTextEdit;
     }
 

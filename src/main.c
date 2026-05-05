@@ -1,10 +1,10 @@
 #include <stdbool.h>
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"
-#include "raylib.h"
-// #include "blackjackclient.h"
+#include "blackjackclient.h"
 #include "gamemenu.h"
 #include "gamewindow.h"
+#include "raygui.h"
+#include "raylib.h"
 
 // currently prototypes defined just to avoid errors, is part of another file
 

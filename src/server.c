@@ -7,7 +7,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define FIELD_MAX_SIZE 16
+
 int main() {
+
+  char recvbuf[128] = "";
+
   sqlite3 *gameDB;
   int sqlReturnVal = sqlite3_open("Blackjack.db", &gameDB);
   if (sqlReturnVal != SQLITE_OK) {
@@ -26,7 +31,7 @@ int main() {
   int returnVal;
   returnVal = getaddrinfo(NULL, "27015", &hints, &addrinfoResult);
   if (returnVal != 0) {
-    printf("error in getaddrinfo");
+    printf("error in getaddrinfo()");
     freeaddrinfo(addrinfoResult);
     return 1;
   }
@@ -50,4 +55,32 @@ int main() {
   }
 
   freeaddrinfo(addrinfoResult);
+
+  int clientSocket;
+
+  while (1) {
+
+    if (listen(listenSocket, SOMAXCONN) == -1) {
+      printf("error at listen()");
+      freeaddrinfo(addrinfoResult);
+      close(listenSocket);
+      return 1;
+    }
+
+    clientSocket = accept(listenSocket, NULL, NULL);
+    if (clientSocket == -1) {
+      printf("error at accept()");
+      close(listenSocket);
+      return 1;
+    }
+
+    close(listenSocket);
+
+    do {
+      returnVal = recv(clientSocket, recvbuf, 128, 0);
+      if (returnVal > 0) {
+        printf("received from client");
+      }
+    } while (returnVal > 0);
+  }
 }
