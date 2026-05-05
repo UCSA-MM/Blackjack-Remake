@@ -8,12 +8,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-int returnVal;
+#define SOCKERR -1
+#define SOCKOK 0
+#define BUFSIZE 128
+
 int activeSocket;
 
 bool startConnection();
 
+// returns true if the connection was successful, otherwise returns false
 bool startConnection() {
+
+  int returnVal;
 
   struct addrinfo *addrinfoResult = NULL, *ptr = NULL, hints;
   memset(&hints, 0, sizeof(hints));
@@ -22,7 +28,7 @@ bool startConnection() {
   hints.ai_protocol = IPPROTO_TCP;
 
   returnVal = getaddrinfo(NULL, "27015", &hints, &addrinfoResult);
-  if (returnVal != 0) {
+  if (returnVal != SOCKOK) {
     perror("error in getaddrinfo()");
     freeaddrinfo(addrinfoResult);
     return false;
@@ -30,7 +36,7 @@ bool startConnection() {
 
   activeSocket = socket(addrinfoResult->ai_family, addrinfoResult->ai_socktype,
                         addrinfoResult->ai_protocol);
-  if (activeSocket == -1) {
+  if (activeSocket == SOCKERR) {
     perror("error in socket()");
     freeaddrinfo(addrinfoResult);
     return false;
@@ -38,7 +44,7 @@ bool startConnection() {
 
   returnVal = connect(activeSocket, addrinfoResult->ai_addr,
                       (int)addrinfoResult->ai_addrlen);
-  if (returnVal == -1) {
+  if (returnVal == SOCKERR) {
     perror("error in connect()");
     freeaddrinfo(addrinfoResult);
     close(activeSocket);
@@ -51,16 +57,18 @@ bool startConnection() {
 
 bool serverLogin(char username[], char password[], bool isRegister) {
 
+  int returnVal;
+
   if (!startConnection()) {
     return false;
   }
 
-  char qbuf[32] = "";
-  char recvbuf[32] = "";
+  char qbuf[BUFSIZE] = "";
+  char recvbuf[BUFSIZE] = "";
 
-  sprintf(qbuf, "Username:%s", username);
-  returnVal = send(activeSocket, qbuf, 32, 0);
-  if (returnVal == -1) {
+  sprintf(qbuf, "usr:%s", username);
+  returnVal = send(activeSocket, qbuf, BUFSIZE, 0);
+  if (returnVal == SOCKERR) {
     perror("error at send()");
     close(activeSocket);
     return false;
@@ -69,3 +77,7 @@ bool serverLogin(char username[], char password[], bool isRegister) {
   close(activeSocket);
   return true;
 }
+
+// TODO:
+// [ ] finish adding server queries
+// [ ] add handling of answer from server

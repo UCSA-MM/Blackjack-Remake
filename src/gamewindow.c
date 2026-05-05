@@ -13,7 +13,6 @@
 // header.
 #define MAX_CARD_NUM 5
 
-// values for the card are supposed to be a percentage of the screen.
 #define CARD_WIDTH 0.156f
 #define CARD_X_START 0.03f
 #define CARD_X_STEP 0.171f

@@ -8,7 +8,34 @@
 
 #define WHITE_32 0xffffffff
 #define BLUE_TRANSP_32 0x97E8FF80
+
+#define TITLEVEC_RELX 0.03f
+#define TITLEVEC_RELY 0.03f
+#define TITLE_FONTSIZE 128
+#define FONT_CHARNUM 250
+#define START_BUTTON_RELX 0.05f
+#define START_BUTTON_RELW 0.3f
+#define START_BUTTON_RELH 0.1f
+#define PLAY_RELY 0.3f
+#define LOGIN_RELY PLAY_RELY + 0.15f
+#define REGISTER_RELY LOGIN_RELY + 0.15f
+
 #define FIELD_MAX_SIZE 16
+#define ACTION_STRSIZE 10
+#define ACC_LABEL_RELX 0.1f
+#define ACC_ULABEL_RELY 0.15f
+#define ACC_PLABEL_RELY ACC_ULABEL_RELY + 0.25f
+#define INPUT_RELX 0.1f
+#define INPUT_USER_RELY 0.2f
+#define INPUT_PASS_RELY INPUT_USER_RELY + 0.25f
+#define INPUT_RELW 0.5f
+#define INPUT_RELH 0.15f
+#define ACTION_RELX 0.12f
+#define BACK_RELX 0.40f
+#define ACC_BUTTON_RELY 0.75f
+#define ACC_BUTTON_RELW 0.25f
+#define ACC_BUTTON_RELH 0.1f
+#define INPUT_FONTSIZE 32
 
 bool AccountInterface(bool isRegister);
 
@@ -19,6 +46,9 @@ Font menu_defaultFont, menu_titleFont;
 bool StartMenu() {
 
   Rectangle rec_PlayButton, rec_LoginButton, rec_RegisterButton;
+  bool playButtonPressed, loginButtonPressed, registerButtonPressed;
+  bool isCollidingWithMenuButtons;
+  bool isOnline = false;
 
   SetConfigFlags(FLAG_MSAA_4X_HINT);
   // the window is technically not resizable but on WSL it is not working for
@@ -41,24 +71,21 @@ bool StartMenu() {
   menu_screenHeight = (float)GetScreenHeight();
 
   Vector2 titleVec;
-  titleVec.x = menu_screenWidth * 0.03f;
-  titleVec.y = menu_screenHeight * 0.03f;
+  titleVec.x = menu_screenWidth * TITLEVEC_RELX;
+  titleVec.y = menu_screenHeight * TITLEVEC_RELY;
 
-  menu_titleFont = LoadFontEx("../assets/cardcharacters.ttf", 128, 0, 250);
+  menu_titleFont = LoadFontEx("../assets/cardcharacters.ttf", TITLE_FONTSIZE, 0,
+                              FONT_CHARNUM);
 
   rec_PlayButton.x = rec_LoginButton.x = rec_RegisterButton.x =
-      menu_screenWidth * 0.05f;
+      menu_screenWidth * START_BUTTON_RELX;
   rec_PlayButton.width = rec_LoginButton.width = rec_RegisterButton.width =
-      menu_screenWidth * 0.3f;
+      menu_screenWidth * START_BUTTON_RELW;
   rec_PlayButton.height = rec_LoginButton.height = rec_RegisterButton.height =
-      menu_screenHeight * 0.1f;
-  rec_PlayButton.y = menu_screenHeight * 0.3f;
-  rec_LoginButton.y = menu_screenHeight * 0.45f;
-  rec_RegisterButton.y = menu_screenHeight * 0.6f;
-
-  bool playButtonPressed, loginButtonPressed, registerButtonPressed;
-  bool isCollidingWithMenuButtons;
-  bool isOnline = false;
+      menu_screenHeight * START_BUTTON_RELH;
+  rec_PlayButton.y = menu_screenHeight * PLAY_RELY;
+  rec_LoginButton.y = menu_screenHeight * LOGIN_RELY;
+  rec_RegisterButton.y = menu_screenHeight * REGISTER_RELY;
 
   while (!WindowShouldClose()) {
 
@@ -66,7 +93,7 @@ bool StartMenu() {
 
     ClearBackground(DARKGREEN);
 
-    DrawTextEx(menu_titleFont, "BLACKJACK", titleVec, 128, 5, WHITE);
+    DrawTextEx(menu_titleFont, "BLACKJACK", titleVec, TITLE_FONTSIZE, 5, WHITE);
 
     playButtonPressed = GuiButton(rec_PlayButton, "PLAY");
     loginButtonPressed = GuiButton(rec_LoginButton, "LOGIN");
@@ -110,21 +137,23 @@ bool AccountInterface(bool isRegister) {
   Rectangle rec_ActionButton, rec_BackButton;
   char str_Username[FIELD_MAX_SIZE] = "";
   char str_Password[FIELD_MAX_SIZE] = "";
-  char str_ActionText[10] = "";
-  Vector2 vec_UsernameLabelPos =
-              (Vector2){menu_screenWidth * 0.1f, menu_screenHeight * 0.15f},
-          vec_PasswordLabelPos =
-              (Vector2){vec_UsernameLabelPos.x, menu_screenHeight * 0.4f};
-  rec_UserInput.x = rec_PassInput.x = menu_screenWidth * 0.1f;
-  rec_UserInput.y = menu_screenHeight * 0.2f;
-  rec_PassInput.y = menu_screenHeight * 0.45f;
-  rec_UserInput.width = rec_PassInput.width = menu_screenWidth * 0.5f;
-  rec_UserInput.height = rec_PassInput.height = menu_screenHeight * 0.15f;
-  rec_ActionButton.x = menu_screenWidth * 0.12f;
-  rec_BackButton.x = menu_screenWidth * 0.40f;
-  rec_ActionButton.y = rec_BackButton.y = menu_screenHeight * 0.75f;
-  rec_ActionButton.width = rec_BackButton.width = menu_screenWidth * 0.25f;
-  rec_ActionButton.height = rec_BackButton.height = menu_screenHeight * 0.1f;
+  char str_ActionText[ACTION_STRSIZE] = "";
+  Vector2 vec_UsernameLabelPos = (Vector2){menu_screenWidth * ACC_LABEL_RELX,
+                                           menu_screenHeight * ACC_ULABEL_RELY},
+          vec_PasswordLabelPos = (Vector2){vec_UsernameLabelPos.x,
+                                           menu_screenHeight * ACC_PLABEL_RELY};
+  rec_UserInput.x = rec_PassInput.x = menu_screenWidth * INPUT_RELX;
+  rec_UserInput.y = menu_screenHeight * INPUT_USER_RELY;
+  rec_PassInput.y = menu_screenHeight * INPUT_PASS_RELY;
+  rec_UserInput.width = rec_PassInput.width = menu_screenWidth * INPUT_RELW;
+  rec_UserInput.height = rec_PassInput.height = menu_screenHeight * INPUT_RELH;
+  rec_ActionButton.x = menu_screenWidth * ACTION_RELX;
+  rec_BackButton.x = menu_screenWidth * BACK_RELX;
+  rec_ActionButton.y = rec_BackButton.y = menu_screenHeight * ACC_BUTTON_RELY;
+  rec_ActionButton.width = rec_BackButton.width =
+      menu_screenWidth * ACC_BUTTON_RELW;
+  rec_ActionButton.height = rec_BackButton.height =
+      menu_screenHeight * ACC_BUTTON_RELH;
   if (isRegister) {
     strcpy(str_ActionText, "REGISTER");
   } else {
@@ -146,10 +175,10 @@ bool AccountInterface(bool isRegister) {
       passwordTextEdit = !passwordTextEdit;
     }
 
-    DrawTextEx(menu_defaultFont, "USERNAME", vec_UsernameLabelPos, 32, 5,
-               WHITE);
-    DrawTextEx(menu_defaultFont, "PASSWORD", vec_PasswordLabelPos, 32, 5,
-               WHITE);
+    DrawTextEx(menu_defaultFont, "USERNAME", vec_UsernameLabelPos,
+               INPUT_FONTSIZE, 5, WHITE);
+    DrawTextEx(menu_defaultFont, "PASSWORD", vec_PasswordLabelPos,
+               INPUT_FONTSIZE, 5, WHITE);
 
     actionButtonPressed = GuiButton(rec_ActionButton, str_ActionText);
     backButtonPressed = GuiButton(rec_BackButton, "BACK");
@@ -177,13 +206,5 @@ bool AccountInterface(bool isRegister) {
 }
 
 // TODO:
-// [X] Add a button to start playing the game to replace the current window
-// closing system
-// [X] create a button to start a login or registration procedure
-// [X] create the login/register UI
 // [ ] add functionality to the buttons
-// [X] fix the size of buttons in the register UI
-
-// NOTE:
-// login/register UI *must* be able to store data inserted by the user so that
-// it can be later sent to the server
+// [ ] add a good starting position for the window
