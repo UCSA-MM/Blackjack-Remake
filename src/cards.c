@@ -4,6 +4,11 @@
 
 void CardSwap(card *p_first, card *p_second);
 
+/*
+ * This functions fills a deck with the number of cards of a number of standard
+ * decks equal to that passed and returns the deck.
+ * Decks are allocated in memory and must be deallocated once not used.
+ */
 deck FillDeck(int n_decks) {
 
   int rank;

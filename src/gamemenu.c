@@ -9,6 +9,7 @@
 #define WHITE_32 0xffffffff
 #define BLUE_TRANSP_32 0x97E8FF80
 
+// floats can be seen as percentages of screen size
 #define TITLEVEC_RELX 0.03f
 #define TITLEVEC_RELY 0.03f
 #define TITLE_FONTSIZE 128
@@ -43,6 +44,15 @@ float menu_screenWidth = 0.f;
 float menu_screenHeight = 0.f;
 Font menu_defaultFont, menu_titleFont;
 
+/*
+ * this function handles drawing the main menu and operations related to it.
+ * on button presses, it can call function for login screen creation or return a
+ * value to main for game start.
+ *
+ * return:
+ *    if a login operation was successful (so if the player is connected to the
+ *    server)
+ */
 bool StartMenu() {
 
   Rectangle rec_PlayButton, rec_LoginButton, rec_RegisterButton;
@@ -128,6 +138,13 @@ bool StartMenu() {
   exit(0);
 }
 
+/*
+ * this function draws the login and register interface and handles the calls to
+ * operations from gameclient.h
+ *
+ * return:
+ *    if a login operation was successful or not
+ */
 bool AccountInterface(bool isRegister) {
 
   bool usernameTextEdit = false, passwordTextEdit = false;
@@ -199,6 +216,7 @@ bool AccountInterface(bool isRegister) {
       return false;
     } else if (actionButtonPressed) {
       qResult = serverLogin(str_Username, str_Password, isRegister);
+      return qResult;
     }
   }
 

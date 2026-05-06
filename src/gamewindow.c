@@ -12,13 +12,35 @@
 // causing issues, at least i think) are located as define statements in the
 // header.
 #define MAX_CARD_NUM 5
-
+// values here can be seen as percentages of the screen
 #define CARD_WIDTH 0.156f
 #define CARD_X_START 0.03f
 #define CARD_X_STEP 0.171f
 #define DEALER_CARD_Y 0.1f
 #define PLAYER_CARD_Y 0.55f
 #define CARD_HEIGHT 0.35f
+#define BUTTON_RELX 0.91f
+#define BUTTON_RELW 0.08f
+#define BUTTON_RELH 0.05f
+#define BUTTON_BG_RELX 0.9f
+#define BUTTON_BG_RELY 0
+#define BUTTON_BG_RELW 0.1f
+#define BUTTON_BG_RELH 1.f
+#define HIT_BUTTON_RELY 0.01f
+#define STAND_BUTTON_RELY HIT_BUTTON_RELY + 0.07f
+#define SURREND_BUTTON_RELY STAND_BUTTON_RELY + 0.07f
+#define DOUBLEDOWN_BUTTON_RELY SURREND_BUTTON_RELY + 0.07f
+#define BET_BUTTON_RELY DOUBLEDOWN_BUTTON_RELY + 0.07f
+#define END_MESSAGE_RELX 0.2f
+#define END_MESSAGE_RELY 0.3f
+#define END_MESSAGE_RELW 0.5f
+#define END_MESSAGE_RELH 0.4f
+#define END_RETRY_RELX 0.4f
+#define END_RETRY_RELY 0.5f
+#define END_RETRY_RELW 0.1f
+#define END_RETRY_RELH 0.05f
+#define END_TEXT_RELX 0.45f
+#define END_TEXT_RELY 0.4f
 
 // these numbers have no real meaning aside from the fact that they didn't look
 // bad. The usage is that size * defined value = screen height.
@@ -42,7 +64,8 @@
 #define NARROW10 "="
 
 typedef enum endgame_state {
-  WIN = 1,
+  NO = 0,
+  WIN,
   LOSE,
   BUST,
   CHARLIE,
@@ -50,18 +73,12 @@ typedef enum endgame_state {
   DRAW
 } endgame_state;
 
-// this is basically used as a flag for the execution of a jump. In this
-// context, CONTINUE means to keep drawing the end screen while retry means
-// executing the jump to restart.
-typedef enum final_action { RETRY = 1, CONTINUE } final_action;
-
 void game_DrawCard(card card, Rectangle target);
-
 // function used to check for updates to the size of the window and to resize
 // the elements accordingly
 void game_UpdateSizes();
 void game_UpdateCursor();
-final_action DrawEndgameScreen(endgame_state flag_endgame_state);
+bool DrawEndgameScreen(endgame_state flag_endgame_state);
 
 Rectangle arr_recPlayerCards[MAX_CARD_NUM], arr_recDealerCards[MAX_CARD_NUM];
 
@@ -80,6 +97,16 @@ char str_endMessage[32] = "";
 
 Font game_defaultFont, game_cardFont;
 
+/*
+ * this function handles the game logic and drawing the game window.
+ *
+ * params:
+ *    is_logged_in    used to know if the current user is online or not.
+ *                    this impacts the call of functions for bet handling.
+ *
+ * return:
+ *    returns if the app should go back to the main menu or the app should close
+ */
 bool GameStart(bool is_logged_in) {
 
   bool hitButtonPressed, standButtonPressed, surrendButtonPressed,
@@ -251,7 +278,7 @@ start:
         endResult = DRAW;
       }
 
-      if (DrawEndgameScreen(endResult) == RETRY) {
+      if (DrawEndgameScreen(endResult)) {
         free(gameDeck.cards);
         goto start;
       }
@@ -373,14 +400,14 @@ void game_UpdateSizes() {
 
     // magic numbers can be seen as a percentage of the screen
 
-    const float button_x = game_screenWidth * 0.91f,
-                button_width = game_screenWidth * 0.08f,
-                button_height = game_screenHeight * 0.05f;
+    const float button_x = game_screenWidth * BUTTON_RELX,
+                button_width = game_screenWidth * BUTTON_RELW,
+                button_height = game_screenHeight * BUTTON_RELH;
 
-    button_bg.x = game_screenWidth * 0.9f;
-    button_bg.y = 0;
-    button_bg.width = game_screenWidth * 0.1f;
-    button_bg.height = game_screenHeight;
+    button_bg.x = game_screenWidth * BUTTON_BG_RELX;
+    button_bg.y = BUTTON_BG_RELY;
+    button_bg.width = game_screenWidth * BUTTON_BG_RELW;
+    button_bg.height = BUTTON_BG_RELH;
 
     rec_hitButton.x = rec_standButton.x = rec_surrendButton.x =
         rec_doubledownButton.x = rec_betButton.x = button_x;
@@ -391,29 +418,29 @@ void game_UpdateSizes() {
     rec_hitButton.height = rec_standButton.height = rec_surrendButton.height =
         rec_doubledownButton.height = rec_betButton.height = button_height;
 
-    rec_hitButton.y = game_screenHeight * 0.01f;
-    rec_standButton.y = game_screenHeight * 0.08f;
-    rec_surrendButton.y = game_screenHeight * 0.15f;
-    rec_doubledownButton.y = game_screenHeight * 0.22f;
-    rec_betButton.y = game_screenHeight * 0.29f;
+    rec_hitButton.y = game_screenHeight * HIT_BUTTON_RELY;
+    rec_standButton.y = game_screenHeight * STAND_BUTTON_RELY;
+    rec_surrendButton.y = game_screenHeight * SURREND_BUTTON_RELY;
+    rec_doubledownButton.y = game_screenHeight * DOUBLEDOWN_BUTTON_RELY;
+    rec_betButton.y = game_screenHeight * BET_BUTTON_RELY;
 
-    rec_endMessage_bg.x = game_screenWidth * 0.2f;
-    rec_endMessage_bg.y = game_screenHeight * 0.3f;
-    rec_endMessage_bg.width = game_screenWidth * 0.5f;
-    rec_endMessage_bg.height = game_screenHeight * 0.4f;
+    rec_endMessage_bg.x = game_screenWidth * END_MESSAGE_RELX;
+    rec_endMessage_bg.y = game_screenHeight * END_MESSAGE_RELY;
+    rec_endMessage_bg.width = game_screenWidth * END_MESSAGE_RELW;
+    rec_endMessage_bg.height = game_screenHeight * END_MESSAGE_RELH;
 
-    rec_retryButton.x = game_screenWidth * 0.4f;
-    rec_retryButton.y = game_screenHeight * 0.5f;
-    rec_retryButton.width = game_screenWidth * 0.1f;
-    rec_retryButton.height = game_screenHeight * 0.05f;
+    rec_retryButton.x = game_screenWidth * END_RETRY_RELX;
+    rec_retryButton.y = game_screenHeight * END_RETRY_RELY;
+    rec_retryButton.width = game_screenWidth * END_RETRY_RELW;
+    rec_retryButton.height = game_screenHeight * END_RETRY_RELH;
 
-    vec_endgameText.x = game_screenWidth * 0.45f;
-    vec_endgameText.y = game_screenHeight * 0.4f;
+    vec_endgameText.x = game_screenWidth * END_TEXT_RELX;
+    vec_endgameText.y = game_screenHeight * END_TEXT_RELY;
   }
 }
 
-final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
-  if (flag_endgame_state != 0) {
+bool DrawEndgameScreen(endgame_state flag_endgame_state) {
+  if (flag_endgame_state != NO) {
 
     DrawRectangleRec(rec_endMessage_bg, GOLD);
 
@@ -453,12 +480,12 @@ final_action DrawEndgameScreen(endgame_state flag_endgame_state) {
     game_UpdateCursor();
 
     if (retryButtonPressed) {
-      return RETRY;
+      return true;
     } else {
-      return CONTINUE;
+      return false;
     }
   }
-  return CONTINUE;
+  return false;
 }
 
 void game_UpdateCursor() {

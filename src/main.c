@@ -6,8 +6,6 @@
 #include "raygui.h"
 #include "raylib.h"
 
-// currently prototypes defined just to avoid errors, is part of another file
-
 int main(void) {
 
   bool backToMenu, isLoggedIn;
@@ -17,6 +15,3 @@ int main(void) {
   } while (backToMenu == true);
   return 0;
 }
-// TODO:
-// [X] remove temp interaction between closing menu and starting game
-// [X] find what causes unwanted texture unloading

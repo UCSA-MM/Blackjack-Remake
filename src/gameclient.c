@@ -55,6 +55,13 @@ bool startConnection() {
   return true;
 }
 
+/*
+ * this function deals with the login query for the server. if isRegister is
+ * true then starts the registration process.
+ *
+ * return:
+ *    boolean indicating if the operation was successful
+ */
 bool serverLogin(char username[], char password[], bool isRegister) {
 
   int returnVal;
