@@ -10,6 +10,7 @@
 
 #define SOCKERR -1
 #define SOCKOK 0
+#define CONNCLOSED 0
 #define BUFSIZE 128
 
 int activeSocket;
@@ -77,6 +78,40 @@ bool serverLogin(char username[], char password[], bool isRegister) {
   returnVal = send(activeSocket, qbuf, BUFSIZE, 0);
   if (returnVal == SOCKERR) {
     perror("error at send()");
+    close(activeSocket);
+    return false;
+  }
+
+  // in theory recv gives the size of the received message but since we only
+  // need to know if there was one we can use it as if it was a success code
+  // one confusing thing is that here 0 would be a failure, so i need to define
+  // another value to fake the 0 being different from SOCKOK
+  returnVal = recv(activeSocket, recvbuf, BUFSIZE, 0);
+  if (returnVal == SOCKERR) {
+    perror("error at recv()");
+    close(activeSocket);
+    return false;
+  } else if (returnVal == CONNCLOSED) {
+    perror("server connection closed");
+    close(activeSocket);
+    return false;
+  }
+
+  sprintf(qbuf, "pwd:%s", password);
+  returnVal = send(activeSocket, qbuf, BUFSIZE, 0);
+  if (returnVal == SOCKERR) {
+    perror("error at send()");
+    close(activeSocket);
+    return false;
+  }
+
+  returnVal = recv(activeSocket, recvbuf, BUFSIZE, 0);
+  if (returnVal == SOCKERR) {
+    perror("error at recv()");
+    close(activeSocket);
+    return false;
+  } else if (returnVal == CONNCLOSED) {
+    perror("server connection closed");
     close(activeSocket);
     return false;
   }
