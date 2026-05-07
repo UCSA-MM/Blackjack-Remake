@@ -6,9 +6,9 @@ main : main.c gamewindow.c cards.c gamemenu.c gameclient.c
 	-o main \
 	-I ../include -L ../lib -lraylib -lm
 
-server : server.c
+server : server.c gamedb.c
 	gcc -Wall -Wextra -pedantic --verbose -O2 -g \
-	server.c \
+	server.c gamedb.c \
 	-o server \
 	-lsqlite3
 

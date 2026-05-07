@@ -95,6 +95,8 @@ bool serverLogin(char username[], char password[], bool isRegister) {
     perror("server connection closed");
     close(activeSocket);
     return false;
+  } else if (returnVal > 0) {
+    ; // without this else if ENOENT is added as last error and it is annoying.
   }
 
   sprintf(qbuf, "pwd:%s", password);
@@ -114,6 +116,8 @@ bool serverLogin(char username[], char password[], bool isRegister) {
     perror("server connection closed");
     close(activeSocket);
     return false;
+  } else if (returnVal > 0) {
+    ; // without this else if ENOENT is added as last error and it's annoying
   }
 
   close(activeSocket);

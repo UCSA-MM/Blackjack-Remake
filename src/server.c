@@ -1,3 +1,4 @@
+#include "gamedb.h"
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sqlite3.h>
@@ -43,6 +44,10 @@ int main() {
   sqlReturnVal = sqlite3_open("Blackjack.db", &gameDB);
   if (sqlReturnVal != SQLITE_OK) {
     perror("error in sqlite3_open");
+    return 1;
+  }
+  if (!setupTables(gameDB)) {
+    perror("error in setupTables()");
     return 1;
   }
 
@@ -92,6 +97,7 @@ int main() {
       qsize = recv(clientSocket, recvbuf, BUFSIZE, 0);
       if (qsize > 0) {
         perror("received from client");
+        printf("\n%s\n", recvbuf);
       }
 
       if (strncmp("usr:", recvbuf, USER_QSIZE) == 0) {
